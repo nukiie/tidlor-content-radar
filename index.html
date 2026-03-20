@@ -339,7 +339,7 @@ header{padding:32px 0 24px;border-bottom:1px solid var(--border)}
     <button class="qk-btn" onclick="setKeyword('รีไฟแนนซ์รถ')">รีไฟแนนซ์รถ</button>
   </div>
   <div class="config-row">
-    <input class="config-input" id="apps-script-url" type="text" placeholder="https://script.google.com/macros/s/AKfycbzTRaNlPMK_CX9wjRnoMD2ZdbDK2Sn_B14ot1ilRWoPHGcdecdXfmh3ZWpQQakF-h8/exec"/>
+    <input class="config-input" id="apps-script-url" type="text" placeholder="Apps Script URL (โหลดจาก localStorage อัตโนมัติ)"/>
     <button class="btn-save-cfg" onclick="saveConfig()">💾 Save</button>
   </div>
 </div>
@@ -437,11 +437,17 @@ header{padding:32px 0 24px;border-bottom:1px solid var(--border)}
 </div>
 <script>
 let currentAudience='gen_z',currentData=null,currentIdeas=null,currentIntent=null,currentNews=null;
-let appsScriptUrl=localStorage.getItem('apps_script_url')||'';
+const DEFAULT_URL='https://script.google.com/macros/s/AKfycbzTRaNlPMK_CX9wjRnoMD2ZdbDK2Sn_B14ot1ilRWoPHGcdecdXfmh3ZWpQQakF-h8/exec';
+let appsScriptUrl=localStorage.getItem('apps_script_url')||DEFAULT_URL;
 
 window.onload=()=>{
   document.getElementById('apps-script-url').value=appsScriptUrl;
-  if(appsScriptUrl)document.getElementById('config-banner').style.display='none';
+  if(appsScriptUrl){
+    document.getElementById('config-banner').style.display='none';
+    if(!localStorage.getItem('apps_script_url')){
+      localStorage.setItem('apps_script_url',appsScriptUrl);
+    }
+  }
 };
 
 function setAudience(v,el){currentAudience=v;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active')}
