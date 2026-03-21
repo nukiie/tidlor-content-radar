@@ -5,733 +5,853 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tidlor Content Radar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #12151c;
-    --surface2: #1a1f2a;
-    --border: #252b38;
-    --accent: #00e5a0;
-    --accent2: #ff6b35;
-    --accent3: #7c6aff;
-    --text: #e8eaf0;
-    --text-dim: #6b7591;
-    --text-mid: #a0a8bf;
-    --font: 'Sarabun', sans-serif;
-    --mono: 'IBM Plex Mono', monospace;
-  }
+:root {
+  --ink:    #0d1117;
+  --ink2:   #161b22;
+  --ink3:   #21262d;
+  --line:   #30363d;
+  --line2:  #444c56;
+  --muted:  #6e7681;
+  --body:   #c9d1d9;
+  --head:   #f0f6fc;
+  --lime:   #39d353;
+  --amber:  #f0a500;
+  --coral:  #f85149;
+  --sky:    #58a6ff;
+  --violet: #a371f7;
+  --fn: 'Sarabun', sans-serif;
+  --mo: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--ink);
+  color: var(--body);
+  font-family: var(--fn);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ── Subtle dot grid background ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(48,54,61,.6) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
 
-  /* Animated grid background */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+.page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
 
-  .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 20px; }
+/* ────────── HEADER ────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 0 22px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+.logo-ring {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--lime);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+.logo-ring::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  border: 1px solid rgba(57,211,83,.25);
+}
+.logo-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime);
+  animation: glow 2s ease-in-out infinite;
+}
+@keyframes glow { 0%,100%{box-shadow:0 0 6px var(--lime)} 50%{box-shadow:0 0 16px var(--lime)} }
 
-  /* ── Header ── */
-  header {
-    padding: 32px 0 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .header-inner { display: flex; align-items: center; gap: 16px; }
-  .logo-mark {
-    width: 42px; height: 42px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: grid; place-items: center;
-    flex-shrink: 0;
-  }
-  .logo-mark svg { width: 22px; height: 22px; }
-  .logo-text h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
-  .logo-text p { font-size: 12px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
-  .status-dot {
-    margin-left: auto;
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; color: var(--text-dim); font-family: var(--mono);
-  }
-  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.header-text h1 { font-size: 17px; font-weight: 700; color: var(--head); letter-spacing: -.3px; }
+.header-text p  { font-size: 11px; color: var(--muted); font-family: var(--mo); margin-top: 1px; }
 
-  /* ── Config Banner ── */
-  .config-banner {
-    margin: 20px 0;
-    padding: 14px 18px;
-    background: rgba(255,107,53,0.08);
-    border: 1px solid rgba(255,107,53,0.25);
-    border-radius: 10px;
-    font-size: 13px; color: #ffb89a;
-    display: flex; align-items: flex-start; gap: 10px;
-  }
-  .config-banner span { opacity: 0.7; font-size: 16px; }
+.header-status {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; color: var(--muted); font-family: var(--mo);
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  /* ── Search Panel ── */
-  .search-panel {
-    margin: 24px 0;
-    padding: 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-  }
-  .panel-label {
-    font-size: 11px; font-family: var(--mono); color: var(--accent);
-    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
-  }
-  .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
-  .keyword-input {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 15px; color: var(--text);
-    font-family: var(--font);
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .keyword-input:focus { border-color: var(--accent); }
-  .keyword-input::placeholder { color: var(--text-dim); }
-  .btn-run {
-    padding: 12px 24px;
-    background: var(--accent);
-    color: #0a0c10;
-    border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 700;
-    font-family: var(--font);
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-run:hover { background: #00ffb3; transform: translateY(-1px); }
-  .btn-run:disabled { opacity: 0.4; transform: none; cursor: not-allowed; }
+/* ────────── CONTROL PANEL ────────── */
+.panel {
+  background: var(--ink2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.panel-label {
+  font-size: 10px;
+  font-family: var(--mo);
+  color: var(--lime);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 14px;
+}
 
-  .audience-row { display: flex; gap: 8px; align-items: center; }
-  .row-label { font-size: 12px; color: var(--text-dim); margin-right: 4px; }
-  .chip {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text-dim);
-    font-size: 12px; font-family: var(--font);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .chip.active { background: var(--accent3); border-color: var(--accent3); color: #fff; }
-  .chip:hover:not(.active) { border-color: var(--accent3); color: var(--text); }
+.input-wrap {
+  display: flex; gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.kw-input {
+  flex: 1;
+  min-width: 180px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 15px;
+  color: var(--head);
+  font-family: var(--fn);
+  outline: none;
+  transition: border-color .2s;
+}
+.kw-input:focus { border-color: var(--lime); }
+.kw-input::placeholder { color: var(--muted); }
 
-  .quick-keywords { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-  .qk-btn {
-    padding: 5px 12px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 6px; font-size: 12px; color: var(--text-mid);
-    cursor: pointer; font-family: var(--font); transition: all 0.15s;
-  }
-  .qk-btn:hover { border-color: var(--accent); color: var(--accent); }
+.run-btn {
+  padding: 11px 26px;
+  background: var(--lime);
+  color: #0d1117;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: all .18s;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+.run-btn:hover:not(:disabled) { background: #56e877; transform: translateY(-1px); }
+.run-btn:active:not(:disabled) { transform: translateY(0); }
+.run-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
-  /* ── Apps Script Config ── */
-  .config-row {
-    display: flex; gap: 8px; margin-top: 16px;
-    padding-top: 16px; border-top: 1px solid var(--border);
-  }
-  .config-input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 12px;
-    font-size: 12px; color: var(--text-dim);
-    font-family: var(--mono);
-    outline: none; transition: border-color 0.2s;
-  }
-  .config-input:focus { border-color: var(--accent3); color: var(--text); }
-  .btn-save-cfg {
-    padding: 9px 16px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; font-size: 12px; color: var(--text-mid);
-    cursor: pointer; font-family: var(--font); transition: all 0.15s;
-  }
-  .btn-save-cfg:hover { border-color: var(--accent3); color: var(--accent3); }
+/* Audience toggle */
+.aud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.aud-label { font-size: 11px; color: var(--muted); margin-right: 2px; }
+.aud-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: all .15s;
+}
+.aud-btn.active {
+  background: var(--violet);
+  border-color: var(--violet);
+  color: #fff;
+}
+.aud-btn:hover:not(.active) { border-color: var(--violet); color: var(--body); }
 
-  /* ── Loading ── */
-  .loading {
-    display: none;
-    text-align: center; padding: 60px 20px;
-  }
-  .loading.show { display: block; }
-  .radar-anim {
-    width: 64px; height: 64px; margin: 0 auto 20px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 14px; color: var(--text-dim); font-family: var(--mono); }
-  .loading-step { margin-top: 8px; font-size: 12px; color: var(--accent); font-family: var(--mono); }
+/* Quick chips */
+.quick-row {
+  display: flex; gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.ql { font-size: 10px; color: var(--muted); line-height: 24px; }
+.quick-btn {
+  padding: 3px 10px;
+  background: var(--ink3);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--body);
+  cursor: pointer;
+  font-family: var(--fn);
+  transition: all .15s;
+}
+.quick-btn:hover { border-color: var(--lime); color: var(--lime); }
 
-  /* ── Results ── */
-  #results { display: none; }
-  #results.show { display: block; }
+/* URL config */
+.cfg-row {
+  display: flex; gap: 7px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.cfg-input {
+  flex: 1;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 11px;
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mo);
+  outline: none;
+  transition: border-color .2s;
+}
+.cfg-input:focus { border-color: var(--sky); color: var(--body); }
+.save-btn {
+  padding: 8px 14px;
+  background: var(--ink3);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--fn);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.save-btn:hover { border-color: var(--sky); color: var(--sky); }
 
-  .results-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-  @media (max-width: 640px) { .results-grid { grid-template-columns: 1fr; } }
+/* ────────── ERROR ────────── */
+.error-box {
+  display: none;
+  padding: 12px 16px;
+  background: rgba(248,81,73,.07);
+  border: 1px solid rgba(248,81,73,.3);
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: #ff7b72;
+  font-family: var(--mo);
+  line-height: 1.6;
+}
+.error-box.show { display: block; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px;
-    position: relative; overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  }
-  .card.green::before { background: var(--accent); }
-  .card.orange::before { background: var(--accent2); }
-  .card.purple::before { background: var(--accent3); }
-  .card.full { grid-column: 1 / -1; }
+/* ────────── LOADING ────────── */
+.loading-wrap {
+  display: none;
+  text-align: center;
+  padding: 60px 0;
+}
+.loading-wrap.show { display: block; }
+.loader {
+  width: 48px; height: 48px;
+  margin: 0 auto 18px;
+  border: 2px solid var(--line);
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.load-text  { font-size: 13px; color: var(--muted); font-family: var(--mo); }
+.load-step  { font-size: 11px; color: var(--lime);  font-family: var(--mo); margin-top: 6px; min-height: 16px; }
 
-  .card-title {
-    font-size: 11px; font-family: var(--mono);
-    text-transform: uppercase; letter-spacing: 1.5px;
-    margin-bottom: 14px;
-  }
-  .card.green .card-title { color: var(--accent); }
-  .card.orange .card-title { color: var(--accent2); }
-  .card.purple .card-title { color: var(--accent3); }
+/* ────────── EMPTY ────────── */
+.empty-state {
+  text-align: center;
+  padding: 70px 0;
+  color: var(--muted);
+}
+.empty-icon { font-size: 42px; margin-bottom: 14px; opacity: .3; }
+.empty-state p { font-size: 13px; line-height: 1.8; }
 
-  /* Keyword chips */
-  .kw-cloud { display: flex; flex-wrap: wrap; gap: 7px; }
-  .kw-tag {
-    padding: 4px 10px;
-    border-radius: 5px; font-size: 12px;
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text-mid); cursor: default;
-  }
-  .kw-tag.paa {
-    background: rgba(124,106,255,0.1);
-    border-color: rgba(124,106,255,0.3);
-    color: #b8b0ff;
-  }
+/* ────────── RESULTS ────────── */
+.results-wrap { display: none; }
+.results-wrap.show { display: block; }
 
-  /* PAA list */
-  .paa-list { list-style: none; }
-  .paa-list li {
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px; color: var(--text-mid);
-    display: flex; gap: 8px; align-items: flex-start;
-  }
-  .paa-list li:last-child { border-bottom: none; }
-  .paa-list li::before { content: "?"; color: var(--accent3); font-family: var(--mono); font-size: 11px; margin-top: 2px; }
+/* Meta strip */
+.meta-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 9px 14px;
+  background: var(--ink2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.meta-item { font-size: 10px; font-family: var(--mo); color: var(--muted); }
+.meta-item strong { color: var(--lime); font-weight: 400; }
+.meta-time { margin-left: auto; font-size: 10px; font-family: var(--mo); color: var(--line2); }
 
-  /* TikTok Script */
-  .script-block { margin-bottom: 16px; }
-  .script-label { font-size: 10px; font-family: var(--mono); color: var(--accent2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .script-text {
-    background: var(--surface2); border-radius: 8px;
-    padding: 12px 14px; font-size: 14px; line-height: 1.6; color: var(--text);
-    border-left: 2px solid transparent;
-  }
-  .script-text.hook { border-color: var(--accent2); font-weight: 600; font-size: 15px; }
-  .script-text.body { border-color: var(--accent3); }
-  .script-text.cta { border-color: var(--accent); }
+/* Section header */
+.sec-hd {
+  font-size: 10px;
+  font-family: var(--mo);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  margin: 22px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sec-hd::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 
-  .hashtag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .hashtag { font-size: 12px; color: var(--accent3); font-family: var(--mono); }
+/* Card grid */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
 
-  /* AEO Cards */
-  .aeo-item {
-    background: var(--surface2); border-radius: 10px;
-    padding: 14px; margin-bottom: 10px;
-    border: 1px solid var(--border);
-  }
-  .aeo-q { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-  .aeo-q::before { content: "Q: "; color: var(--accent); font-family: var(--mono); font-size: 11px; }
-  .aeo-a { font-size: 13px; line-height: 1.6; color: var(--text-mid); }
-  .aeo-a::before { content: "A: "; color: var(--text-dim); font-family: var(--mono); font-size: 11px; }
+.card {
+  background: var(--ink2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.card.c-lime::before   { background: var(--lime); }
+.card.c-sky::before    { background: var(--sky); }
+.card.c-violet::before { background: var(--violet); }
+.card.c-amber::before  { background: var(--amber); }
+.card.c-coral::before  { background: var(--coral); }
+.card.full { grid-column: 1 / -1; }
 
-  /* Pain points */
-  .pain-list { list-style: none; }
-  .pain-list li {
-    padding: 7px 0; border-bottom: 1px solid var(--border);
-    font-size: 13px; color: var(--text-mid);
-    display: flex; gap: 8px;
-  }
-  .pain-list li:last-child { border-bottom: none; }
-  .pain-list li::before { content: "!"; color: var(--accent2); font-family: var(--mono); font-size: 11px; }
+.card-label {
+  font-size: 10px;
+  font-family: var(--mo);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+}
+.card.c-lime   .card-label { color: var(--lime); }
+.card.c-sky    .card-label { color: var(--sky); }
+.card.c-violet .card-label { color: var(--violet); }
+.card.c-amber  .card-label { color: var(--amber); }
+.card.c-coral  .card-label { color: var(--coral); }
 
-  /* Top SERP */
-  .serp-item {
-    padding: 10px 0; border-bottom: 1px solid var(--border);
-  }
-  .serp-item:last-child { border-bottom: none; }
-  .serp-title { font-size: 13px; color: var(--accent3); margin-bottom: 3px; }
-  .serp-snippet { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
-  .serp-url { font-size: 10px; font-family: var(--mono); color: var(--border); margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Keyword cloud */
+.kw-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+.kw-tag {
+  padding: 3px 9px;
+  background: var(--ink3);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--body);
+}
 
-  /* Meta row */
-  .meta-row {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    padding: 12px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px; margin-bottom: 16px;
-  }
-  .meta-item { font-size: 12px; font-family: var(--mono); color: var(--text-dim); }
-  .meta-item span { color: var(--accent); }
+/* PAA list */
+.paa-list { list-style: none; }
+.paa-list li {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--body);
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.paa-list li:last-child { border-bottom: none; }
+.paa-list li::before {
+  content: "?";
+  color: var(--violet);
+  font-family: var(--mo);
+  font-size: 10px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
 
-  /* Action buttons */
-  .action-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-  .btn-action {
-    padding: 10px 20px;
-    border-radius: 8px; border: 1px solid var(--border);
-    font-size: 13px; font-family: var(--font);
-    cursor: pointer; transition: all 0.15s;
-    background: var(--surface2); color: var(--text-mid);
-  }
-  .btn-action:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-action.primary {
-    background: var(--accent); color: #0a0c10;
-    border-color: var(--accent); font-weight: 700;
-  }
-  .btn-action.primary:hover { background: #00ffb3; }
+/* Script blocks */
+.script-field { margin-bottom: 14px; }
+.script-label {
+  font-size: 9px;
+  font-family: var(--mo);
+  color: var(--amber);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+.script-box {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 10px 13px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--body);
+  border-left: 2px solid transparent;
+}
+.script-box.hook   { border-left-color: var(--amber); font-weight: 600; font-size: 14px; color: var(--head); }
+.script-box.body   { border-left-color: var(--violet); }
+.script-box.cta    { border-left-color: var(--lime); }
+.script-box.cap    { border-left-color: var(--line2); font-style: italic; color: var(--muted); }
 
-  /* Error */
-  .error-box {
-    display: none;
-    padding: 16px 20px;
-    background: rgba(255,59,48,0.08);
-    border: 1px solid rgba(255,59,48,0.25);
-    border-radius: 10px; margin: 16px 0;
-    font-size: 13px; color: #ff8080; font-family: var(--mono);
-  }
-  .error-box.show { display: block; }
+.hashtag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.hashtag { font-size: 11px; color: var(--sky); font-family: var(--mo); }
 
-  /* Empty state */
-  .empty {
-    text-align: center; padding: 80px 20px;
-    color: var(--text-dim);
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-  .empty p { font-size: 14px; line-height: 1.6; }
+/* AEO */
+.aeo-item {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.aeo-item:last-child { margin-bottom: 0; }
+.aeo-q {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--head);
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.aeo-q::before { content: "Q  "; color: var(--lime); font-family: var(--mo); font-size: 9px; }
+.aeo-a { font-size: 12px; line-height: 1.65; color: var(--body); }
+.aeo-a::before { content: "A  "; color: var(--muted); font-family: var(--mo); font-size: 9px; }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Pain points */
+.pain-list { list-style: none; }
+.pain-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--body);
+  display: flex; gap: 7px;
+}
+.pain-list li:last-child { border-bottom: none; }
+.pain-list li::before {
+  content: "—";
+  color: var(--coral);
+  font-family: var(--mo);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* SERP results */
+.serp-item { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.serp-item:last-child { border-bottom: none; }
+.serp-title  { font-size: 12px; color: var(--sky); margin-bottom: 3px; }
+.serp-snip   { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.serp-url    { font-size: 9px; font-family: var(--mo); color: var(--line2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Actions */
+.action-row {
+  display: flex; gap: 8px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.action-btn {
+  padding: 9px 18px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-family: var(--fn);
+  cursor: pointer;
+  transition: all .15s;
+  background: var(--ink3);
+  color: var(--body);
+}
+.action-btn:hover  { border-color: var(--lime); color: var(--lime); }
+.action-btn.save   { background: var(--lime); color: #0d1117; border-color: var(--lime); font-weight: 700; }
+.action-btn.save:hover { background: #56e877; }
+.action-btn.reset:hover { border-color: var(--coral); color: var(--coral); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
 
-  <!-- Header -->
-  <header>
-    <div class="header-inner">
-      <div class="logo-mark">
-        <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="11" cy="11" r="3" fill="#0a0c10"/>
-          <circle cx="11" cy="11" r="6" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="3 2"/>
-          <circle cx="11" cy="11" r="9.5" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="2 3"/>
-          <line x1="11" y1="11" x2="17" y2="5" stroke="#0a0c10" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="logo-text">
-        <h1>Tidlor Content Radar</h1>
-        <p>keyword research · tiktok script · aeo generator</p>
-      </div>
-      <div class="status-dot">
-        <div class="dot"></div>
-        <span id="status-label">ready</span>
-      </div>
-    </div>
-  </header>
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-ring"><div class="logo-dot"></div></div>
+  <div class="header-text">
+    <h1>Tidlor Content Radar</h1>
+    <p>keyword · tiktok script · aeo · serp</p>
+  </div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span id="status-lbl">ready</span>
+  </div>
+</header>
 
-  <!-- Config banner -->
-  <div class="config-banner" id="config-banner">
-    <span>⚙️</span>
-    <div>
-      กรุณาใส่ URL ของ Google Apps Script Web App ก่อนใช้งาน
-      (Deploy > New deployment > Web app > Copy URL แล้วใส่ด้านล่าง)
-    </div>
+<!-- CONTROL PANEL -->
+<div class="panel">
+  <div class="panel-label">⚡ Content Radar</div>
+
+  <div class="input-wrap">
+    <input class="kw-input" id="kw-input"
+      type="text"
+      placeholder="พิมพ์ keyword เช่น สินเชื่อทะเบียนรถ..."
+      value="สินเชื่อทะเบียนรถ"/>
+    <button class="run-btn" id="run-btn" onclick="runFull()">▶ Run</button>
   </div>
 
-  <!-- Search Panel -->
-  <div class="search-panel">
-    <div class="panel-label">⚡ Research + Generate</div>
-
-    <div class="input-row">
-      <input
-        class="keyword-input"
-        id="keyword-input"
-        type="text"
-        placeholder="พิมพ์ keyword เช่น สินเชื่อทะเบียนรถ..."
-        value="สินเชื่อทะเบียนรถ"
-      />
-      <button class="btn-run" id="btn-run" onclick="runFull()">▶ Run</button>
-    </div>
-
-    <div class="quick-keywords">
-      <span class="row-label" style="line-height:26px;">Quick:</span>
-      <button class="qk-btn" onclick="setKeyword('สินเชื่อทะเบียนรถ')">สินเชื่อทะเบียนรถ</button>
-      <button class="qk-btn" onclick="setKeyword('สินเชื่อโฉนดที่ดิน')">สินเชื่อโฉนดที่ดิน</button>
-      <button class="qk-btn" onclick="setKeyword('กู้เงิน')">กู้เงิน</button>
-      <button class="qk-btn" onclick="setKeyword('สินเชื่อที่ดิน')">สินเชื่อที่ดิน</button>
-      <button class="qk-btn" onclick="setKeyword('บัตรติดล้อ')">บัตรติดล้อ</button>
-    </div>
-
-    <!-- Apps Script URL config -->
-    <div class="config-row">
-      <input
-        class="config-input"
-        id="apps-script-url"
-        type="text"
-        placeholder="https://script.google.com/macros/s/AKfycbwgaU1RgviDivN4igqM_4qVtU0D6iwZCZnaE8G4rNoxg8pSbFZ9NGmnloaAVY5n9vXk/exec  ← Apps Script URL"
-      />
-      <button class="btn-save-cfg" onclick="saveConfig()">💾 Save</button>
-    </div>
+  <div class="aud-row">
+    <span class="aud-label">กลุ่มเป้าหมาย:</span>
+    <button class="aud-btn active" onclick="setAud('gen_z', this)">Gen Z (18–27)</button>
+    <button class="aud-btn"        onclick="setAud('gen_y', this)">Gen Y (28–42)</button>
   </div>
 
-  <!-- Error -->
-  <div class="error-box" id="error-box"></div>
-
-  <!-- Loading -->
-  <div class="loading" id="loading">
-    <div class="radar-anim"></div>
-    <div class="loading-text">กำลังวิเคราะห์...</div>
-    <div class="loading-step" id="loading-step">กำลังดึงข้อมูลจาก Google Search</div>
+  <div class="quick-row">
+    <span class="ql">Quick:</span>
+    <button class="quick-btn" onclick="setKw('สินเชื่อทะเบียนรถ')">สินเชื่อทะเบียนรถ</button>
+    <button class="quick-btn" onclick="setKw('สินเชื่อโฉนดที่ดิน')">สินเชื่อโฉนดที่ดิน</button>
+    <button class="quick-btn" onclick="setKw('บัตรติดล้อ')">บัตรติดล้อ</button>
+    <button class="quick-btn" onclick="setKw('กู้เงิน')">กู้เงิน</button>
+    <button class="quick-btn" onclick="setKw('เงินกู้ฉุกเฉิน')">เงินกู้ฉุกเฉิน</button>
+    <button class="quick-btn" onclick="setKw('รีไฟแนนซ์รถ')">รีไฟแนนซ์รถ</button>
   </div>
 
-  <!-- Results -->
-  <div id="results">
-    <!-- Meta row -->
-    <div class="meta-row" id="meta-row"></div>
-
-    <!-- Grid -->
-    <div class="results-grid" id="results-grid"></div>
-
-    <!-- Actions -->
-    <div class="action-row">
-      <button class="btn-action primary" onclick="saveToSheet()">📊 Save to Google Sheet</button>
-      <button class="btn-action" onclick="copyScript()">📋 Copy TikTok Script</button>
-      <button class="btn-action" onclick="copyAEO()">🤖 Copy AEO Answers</button>
-      <button class="btn-action" onclick="resetResults()">🔄 ค้นหาใหม่</button>
-    </div>
+  <div class="cfg-row">
+    <input class="cfg-input" id="cfg-url"
+      type="text"
+      placeholder="https://script.google.com/macros/s/AKfycbwtO_DrKqE11qAQKxTNQpofKr5C4zSgCdlxhUO4s6Gaqi0oaTIpLcEAiiHJXafBSksC/exec"/>
+    <button class="save-btn" onclick="saveCfg()">💾 Save URL</button>
   </div>
+</div>
 
-  <!-- Empty State -->
-  <div class="empty" id="empty-state">
-    <div class="empty-icon">📡</div>
-    <p>พิมพ์ keyword และกด Run<br>เพื่อดึงข้อมูลและสร้าง content</p>
+<!-- ERROR -->
+<div class="error-box" id="error-box"></div>
+
+<!-- LOADING -->
+<div class="loading-wrap" id="loading-wrap">
+  <div class="loader"></div>
+  <div class="load-text">กำลังวิเคราะห์ keyword...</div>
+  <div class="load-step" id="load-step">เชื่อมต่อ SerpAPI</div>
+</div>
+
+<!-- EMPTY STATE -->
+<div class="empty-state" id="empty-state">
+  <div class="empty-icon">📡</div>
+  <p>พิมพ์ keyword แล้วกด <strong>Run</strong><br>ระบบจะดึงข้อมูล SERP + สร้าง TikTok Script + AEO ให้อัตโนมัติ</p>
+</div>
+
+<!-- RESULTS -->
+<div class="results-wrap" id="results-wrap">
+
+  <div class="meta-strip" id="meta-strip"></div>
+
+  <!-- Section: Research -->
+  <div class="sec-hd">🔍 Keyword Research</div>
+  <div class="grid-2" id="research-grid"></div>
+
+  <!-- Section: TikTok Script -->
+  <div class="sec-hd">🎵 TikTok Script</div>
+  <div id="script-block"></div>
+
+  <!-- Section: AEO + Insights -->
+  <div class="sec-hd">🤖 AEO + Insights</div>
+  <div class="grid-2" id="aeo-grid"></div>
+
+  <!-- Actions -->
+  <div class="action-row">
+    <button class="action-btn save"  onclick="saveSheet()">📊 Save to Sheet</button>
+    <button class="action-btn"       onclick="copyScript()">📋 Copy Script</button>
+    <button class="action-btn"       onclick="copyAEO()">🤖 Copy AEO</button>
+    <button class="action-btn reset" onclick="resetAll()">🔄 ใหม่</button>
   </div>
 
 </div>
 
+</div><!-- /page -->
 <script>
-let currentAudience = "gen_z";
+// ── Config ──────────────────────────────────────────────────
+const DEFAULT_URL = '';   // ← ใส่ default URL ได้ถ้าต้องการ
+let ASurl   = localStorage.getItem('tidlor_url') || DEFAULT_URL;
+let audience = 'gen_z';
 let currentData = null;
-let appsScriptUrl = localStorage.getItem("apps_script_url") || "https://script.google.com/macros/s/AKfycbzW0nxtxaN3kqI4-7ThEyKhJu1pfIs6NpAx8YQAubhrkknxmgT2AsSLUC4YQYL_ywOm/exec";
 
-// Init
 window.onload = () => {
-  document.getElementById("apps-script-url").value = appsScriptUrl;
-  if (appsScriptUrl) {
-    document.getElementById("config-banner").style.display = "none";
+  if (ASurl) {
+    document.getElementById('cfg-url').value = ASurl;
   }
 };
 
-function setAudience(val, el) {
-  currentAudience = val;
-  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-  el.classList.add("active");
+// ── Helpers ──────────────────────────────────────────────────
+function setKw(v){ document.getElementById('kw-input').value = v; }
+function setAud(v, el){
+  audience = v;
+  document.querySelectorAll('.aud-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
 }
-
-function setKeyword(kw) {
-  document.getElementById("keyword-input").value = kw;
+function saveCfg(){
+  const u = document.getElementById('cfg-url').value.trim();
+  if (!u) return;
+  ASurl = u;
+  localStorage.setItem('tidlor_url', u);
+  setStatus('saved ✓');
+  setTimeout(() => setStatus('ready'), 1500);
 }
-
-function saveConfig() {
-  const url = document.getElementById("apps-script-url").value.trim();
-  if (!url) return;
-  appsScriptUrl = url;
-  localStorage.setItem("apps_script_url", url);
-  document.getElementById("config-banner").style.display = "none";
-  document.getElementById("status-label").textContent = "configured ✓";
-}
-
-// ─── JSONP helper ────────────────────────────────────────────
-function jsonp(baseUrl, params, onSuccess, onError) {
-  const cbName = "cb_" + Date.now();
-  const qs = Object.entries(params)
-    .map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v))
-    .join("&");
-  const url = baseUrl + "?" + qs + "&callback=" + cbName;
-
-  window[cbName] = function(data) {
-    delete window[cbName];
-    document.body.removeChild(script);
-    clearTimeout(timer);
-    onSuccess(data);
-  };
-
-  const script = document.createElement("script");
-  script.src = url;
-  script.onerror = function() {
-    delete window[cbName];
-    document.body.removeChild(script);
-    clearTimeout(timer);
-    onError("script load error");
-  };
-  const timer = setTimeout(function() {
-    if (window[cbName]) {
-      delete window[cbName];
-      try { document.body.removeChild(script); } catch(_) {}
-      onError("timeout");
-    }
-  }, 60000);
-  document.body.appendChild(script);
-}
-
-function runFull() {
-  const keyword = document.getElementById("keyword-input").value.trim();
-  if (!keyword) return;
-
-  if (!appsScriptUrl) {
-    showError("กรุณาใส่ Apps Script URL ก่อน (ดูช่อง config ด้านล่าง)");
-    return;
-  }
-
-  setLoading(true);
-  hideError();
-  resetResults();
-
-  const steps = [
-    "กำลังดึงข้อมูลจาก Google Search...",
-    "วิเคราะห์ People Also Ask...",
-    "ดึง Autocomplete Suggestions...",
-    "สร้าง TikTok Script...",
-    "สร้าง AEO Answers...",
-  ];
-  let si = 0;
-  const stepInterval = setInterval(() => {
-    if (si < steps.length) {
-      document.getElementById("loading-step").textContent = steps[si++];
-    }
-  }, 1200);
-
-  jsonp(
-    appsScriptUrl,
-    { action: "full", keyword: keyword, audience: currentAudience },
-    function(json) {
-      clearInterval(stepInterval);
-      setLoading(false);
-      if (!json.success) { showError("Error: " + (json.error || "Unknown")); return; }
-      currentData = Object.assign({ keyword: keyword, audience: currentAudience }, json.data);
-      renderResults(currentData);
-    },
-    function(err) {
-      clearInterval(stepInterval);
-      setLoading(false);
-      showError("เรียก Apps Script ไม่ได้: " + err + "\nตรวจสอบว่า Deploy แล้วและ Who has access = Anyone");
-    }
-  );
-}
-
-function renderResults(data) {
-  const { research, content, keyword, audience } = data;
-
-  // Meta row
-  document.getElementById("meta-row").innerHTML = `
-    <div class="meta-item">keyword: <span>${keyword}</span></div>
-    <div class="meta-item">audience: <span>${audience === 'gen_z' ? 'Gen Z' : 'Gen Y'}</span></div>
-    <div class="meta-item">intent: <span>${content.search_intent || '—'}</span></div>
-    <div class="meta-item">angle: <span>${content.content_angle || '—'}</span></div>
-    <div class="meta-item" style="margin-left:auto">${new Date().toLocaleTimeString('th-TH')}</div>
-  `;
-
-  const grid = document.getElementById("results-grid");
-  grid.innerHTML = "";
-
-  // Card: Related searches
-  const relatedHTML = (research.relatedSearches || [])
-    .map(s => `<span class="kw-tag">${s}</span>`).join("") +
-    (research.suggestions || [])
-    .map(s => `<span class="kw-tag">${s}</span>`).join("");
-
-  grid.innerHTML += card("green", "🔍 Related Searches + Autocomplete", `<div class="kw-cloud">${relatedHTML}</div>`);
-
-  // Card: People Also Ask
-  const paaHTML = `<ul class="paa-list">${
-    (research.peopleAlsoAsk || []).map(q => `<li>${q}</li>`).join("")
-  }</ul>`;
-  grid.innerHTML += card("purple", "💬 People Also Ask", paaHTML);
-
-  // Card: TikTok Script (full width)
-  const tiktok = content.tiktok_script || {};
-  const scriptHTML = `
-    <div class="script-block">
-      <div class="script-label">🎬 Hook (3-5 วินาที)</div>
-      <div class="script-text hook">${tiktok.hook || '—'}</div>
-    </div>
-    <div class="script-block">
-      <div class="script-label">📢 Body (30-45 วินาที)</div>
-      <div class="script-text body">${(tiktok.body || '—').replace(/\n/g, '<br>')}</div>
-    </div>
-    <div class="script-block">
-      <div class="script-label">✅ CTA</div>
-      <div class="script-text cta">${tiktok.cta || '—'}</div>
-    </div>
-    <div class="script-block">
-      <div class="script-label">📎 Caption</div>
-      <div class="script-text">${tiktok.caption || '—'}</div>
-    </div>
-    <div class="hashtag-row">${(tiktok.hashtags || []).map(h => `<span class="hashtag">${h}</span>`).join(" ")}</div>
-  `;
-  grid.innerHTML += card("orange full", "🎵 TikTok Script", scriptHTML);
-
-  // Card: AEO Answers
-  const aeoHTML = (content.aeo_answers || []).map(item => `
-    <div class="aeo-item">
-      <div class="aeo-q">${item.question}</div>
-      <div class="aeo-a">${item.answer}</div>
-    </div>
-  `).join("");
-  grid.innerHTML += card("purple full", "🤖 AEO Answers (AI Search Optimized)", aeoHTML);
-
-  // Card: Pain Points
-  const painHTML = `<ul class="pain-list">${
-    (content.pain_points || []).map(p => `<li>${p}</li>`).join("")
-  }</ul>`;
-  grid.innerHTML += card("orange", "⚡ Pain Points", painHTML);
-
-  // Card: Top SERP
-  const serpHTML = (research.topResults || []).map(r => `
-    <div class="serp-item">
-      <div class="serp-title">${r.title}</div>
-      <div class="serp-snippet">${r.snippet || ''}</div>
-      <div class="serp-url">${r.url}</div>
-    </div>
-  `).join("");
-  grid.innerHTML += card("green", "📈 Top Google Results", serpHTML);
-
-  document.getElementById("results").classList.add("show");
-  document.getElementById("empty-state").style.display = "none";
-}
-
-function card(cls, title, body) {
-  const [color, extra] = cls.split(" ");
-  return `
-    <div class="card ${color} ${extra || ''}">
-      <div class="card-title">${title}</div>
-      ${body}
-    </div>
-  `;
-}
-
-async function saveToSheet() {
-  if (!currentData || !appsScriptUrl) return;
-  const url = `${appsScriptUrl}?action=full&keyword=${encodeURIComponent(currentData.keyword)}&audience=${currentData.audience}`;
-  document.getElementById("status-label").textContent = "saving...";
-  try {
-    await fetch(url);
-    document.getElementById("status-label").textContent = "saved ✓";
-    setTimeout(() => document.getElementById("status-label").textContent = "ready", 2000);
-  } catch {
-    document.getElementById("status-label").textContent = "save failed";
-  }
-}
-
-function copyScript() {
-  if (!currentData?.content?.tiktok_script) return;
-  const t = currentData.content.tiktok_script;
-  const text = `🎬 HOOK:\n${t.hook}\n\n📢 BODY:\n${t.body}\n\n✅ CTA:\n${t.cta}\n\n📎 CAPTION:\n${t.caption}\n\n${(t.hashtags||[]).join(' ')}`;
-  navigator.clipboard.writeText(text).then(() => alert("คัดลอก TikTok Script แล้ว!"));
-}
-
-function copyAEO() {
-  if (!currentData?.content?.aeo_answers) return;
-  const text = currentData.content.aeo_answers
-    .map(a => `Q: ${a.question}\nA: ${a.answer}`)
-    .join("\n\n");
-  navigator.clipboard.writeText(text).then(() => alert("คัดลอก AEO Answers แล้ว!"));
-}
-
-function setLoading(v) {
-  document.getElementById("loading").className = v ? "loading show" : "loading";
-  document.getElementById("btn-run").disabled = v;
-  document.getElementById("status-label").textContent = v ? "running..." : "ready";
-}
-
-function hideError() {
-  document.getElementById("error-box").className = "error-box";
-}
-
-function showError(msg) {
-  const el = document.getElementById("error-box");
+function setStatus(t){ document.getElementById('status-lbl').textContent = t; }
+function showErr(msg){
+  const el = document.getElementById('error-box');
   el.textContent = msg;
-  el.className = "error-box show";
+  el.classList.add('show');
 }
+function hideErr(){ document.getElementById('error-box').classList.remove('show'); }
+function show(id){ document.getElementById(id).classList.add('show'); }
+function hide(id){ document.getElementById(id).classList.remove('show'); }
+function forceHide(id){ document.getElementById(id).style.display = 'none'; }
+function forceShow(id){ document.getElementById(id).style.display = ''; }
 
-function resetResults() {
-  currentData = null;
-  document.getElementById("results").classList.remove("show");
-  document.getElementById("results-grid").innerHTML = "";
-  document.getElementById("empty-state").style.display = "block";
-}
-
-// ── JSONP helper (bypasses CORS for Apps Script) ──────────────
-function jsonp(baseUrl, params, onSuccess, onError) {
-  const cbName = "cb_" + Date.now();
+// ── JSONP ────────────────────────────────────────────────────
+function jsonp(base, params, onSuccess, onError){
+  const cbName = 'jscb_' + Date.now();
   const timeout = setTimeout(() => {
     cleanup();
-    onError("timeout — Apps Script ใช้เวลานานเกินไป (>90s)");
+    onError('timeout — Apps Script ไม่ตอบ (>90s)');
   }, 90000);
 
-  function cleanup() {
+  function cleanup(){
     delete window[cbName];
-    const s = document.getElementById("jsonp_script");
+    const s = document.getElementById('__jscript__');
     if (s) s.remove();
     clearTimeout(timeout);
   }
 
-  window[cbName] = function(data) {
-    cleanup();
-    onSuccess(data);
-  };
+  window[cbName] = (data) => { cleanup(); onSuccess(data); };
 
   const qs = Object.entries(params)
-    .map(([k,v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v))
-    .join("&");
+    .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+    .join('&');
 
-  const script = document.createElement("script");
-  script.id = "jsonp_script";
-  script.src = baseUrl + "?" + qs + "&callback=" + cbName;
-  script.onerror = function() { cleanup(); onError("script load error — ตรวจสอบว่า Deploy แล้วและ Who has access = Anyone"); };
+  const script = document.createElement('script');
+  script.id    = '__jscript__';
+  script.src   = base + '?' + qs + '&callback=' + cbName;
+  script.onerror = () => {
+    cleanup();
+    onError('โหลด script ไม่ได้ — ตรวจสอบ Deploy: Execute as Me, Anyone can access');
+  };
   document.body.appendChild(script);
+}
+
+// ── Run ──────────────────────────────────────────────────────
+function runFull(){
+  const kw = document.getElementById('kw-input').value.trim();
+
+  if (!kw){
+    showErr('กรุณาใส่ keyword ก่อน');
+    return;
+  }
+  if (!ASurl){
+    showErr('ยังไม่ได้ใส่ Apps Script URL — กรอกแล้วกด Save URL');
+    return;
+  }
+
+  hideErr();
+  setBusy(true);
+  show('loading-wrap');
+  forceHide('empty-state');
+  forceHide('results-wrap');
+
+  // Step messages
+  const steps = [
+    'กำลัง query SerpAPI...',
+    'ดึง People Also Ask...',
+    'ดึง Autocomplete Suggestions...',
+    'ส่ง prompt ไป Gemini...',
+    'สร้าง TikTok Script + AEO...',
+    'เกือบเสร็จแล้ว...',
+  ];
+  let si = 0;
+  const stepEl = document.getElementById('load-step');
+  const iv = setInterval(() => {
+    if (si < steps.length) stepEl.textContent = steps[si++];
+  }, 1300);
+
+  jsonp(
+    ASurl,
+    { action: 'full', keyword: kw, audience },
+    (json) => {
+      clearInterval(iv);
+      setBusy(false);
+      hide('loading-wrap');
+
+      if (!json.success){
+        showErr('Error จาก Apps Script: ' + (json.error || 'Unknown error'));
+        forceShow('empty-state');
+        return;
+      }
+
+      currentData = { keyword: kw, audience, ...json.data };
+      renderAll(currentData);
+      forceShow('results-wrap');
+      // Smooth scroll to results
+      setTimeout(() => document.getElementById('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    },
+    (err) => {
+      clearInterval(iv);
+      setBusy(false);
+      hide('loading-wrap');
+      showErr('เรียก Apps Script ไม่ได้: ' + err);
+      forceShow('empty-state');
+    }
+  );
+}
+
+function setBusy(v){
+  document.getElementById('run-btn').disabled = v;
+  setStatus(v ? 'running...' : 'ready');
+}
+
+// ── Render ───────────────────────────────────────────────────
+function renderAll(d){
+  const { research, content, keyword, audience } = d;
+
+  // Meta strip
+  document.getElementById('meta-strip').innerHTML = `
+    <div class="meta-item">keyword: <strong>${esc(keyword)}</strong></div>
+    <div class="meta-item">audience: <strong>${audience === 'gen_z' ? 'Gen Z' : 'Gen Y'}</strong></div>
+    <div class="meta-item">intent: <strong>${esc(content.search_intent || '—')}</strong></div>
+    <div class="meta-item">angle: <strong>${esc(content.content_angle || '—')}</strong></div>
+    <div class="meta-time">${new Date().toLocaleTimeString('th-TH')}</div>`;
+
+  // ── Research grid ──
+  const rg = document.getElementById('research-grid');
+  rg.innerHTML = '';
+
+  const relTags = [
+    ...(research.relatedSearches || []),
+    ...(research.suggestions || []),
+  ].map(s => `<span class="kw-tag">${esc(s)}</span>`).join('');
+  rg.innerHTML += card('c-lime', '🔍 Related + Autocomplete',
+    `<div class="kw-cloud">${relTags}</div>`);
+
+  rg.innerHTML += card('c-violet', '💬 People Also Ask',
+    `<ul class="paa-list">${(research.peopleAlsoAsk || []).map(q => `<li>${esc(q)}</li>`).join('')}</ul>`);
+
+  rg.innerHTML += card('c-sky full', '📈 Top SERP Results',
+    (research.topResults || []).map(r => `
+      <div class="serp-item">
+        <div class="serp-title">${esc(r.title || '')}</div>
+        <div class="serp-snip">${esc(r.snippet || '')}</div>
+        <div class="serp-url">${esc(r.url || '')}</div>
+      </div>`).join(''));
+
+  // ── TikTok Script ──
+  const t = content.tiktok_script || {};
+  document.getElementById('script-block').innerHTML = card('c-amber full', '🎵 TikTok Script', `
+    <div class="script-field">
+      <div class="script-label">🎬 Hook — ดึงดูดใน 3 วินาที</div>
+      <div class="script-box hook">${esc(t.hook || '—')}</div>
+    </div>
+    <div class="script-field">
+      <div class="script-label">📢 Script / Body</div>
+      <div class="script-box body">${(t.body || '—').replace(/\n/g, '<br>')}</div>
+    </div>
+    <div class="script-field">
+      <div class="script-label">✅ CTA</div>
+      <div class="script-box cta">${esc(t.cta || '—')}</div>
+    </div>
+    <div class="script-field">
+      <div class="script-label">📎 Caption</div>
+      <div class="script-box cap">${esc(t.caption || '—')}</div>
+    </div>
+    <div class="hashtag-row">${(t.hashtags || []).map(h => `<span class="hashtag">${esc(h)}</span>`).join(' ')}</div>`);
+
+  // ── AEO + Insights ──
+  const ag = document.getElementById('aeo-grid');
+  ag.innerHTML = '';
+
+  ag.innerHTML += card('c-sky full', '🤖 AEO Answers (AI Search)',
+    (content.aeo_answers || []).map(a => `
+      <div class="aeo-item">
+        <div class="aeo-q">${esc(a.question || '')}</div>
+        <div class="aeo-a">${esc(a.answer || '')}</div>
+      </div>`).join(''));
+
+  ag.innerHTML += card('c-coral', '⚡ Pain Points',
+    `<ul class="pain-list">${(content.pain_points || []).map(p => `<li>${esc(p)}</li>`).join('')}</ul>`);
+
+  ag.innerHTML += card('c-lime', '🎯 Content Angle', `
+    <div style="font-size:14px;font-weight:600;color:#f0f6fc;line-height:1.5;margin-bottom:8px">${esc(content.content_angle || '—')}</div>
+    <div style="font-size:12px;color:#6e7681">Search Intent: <span style="color:#39d353">${esc(content.search_intent || '—')}</span></div>`);
+}
+
+function card(cls, label, body){
+  return `<div class="card ${cls}"><div class="card-label">${label}</div>${body}</div>`;
+}
+
+function esc(str){
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── Actions ──────────────────────────────────────────────────
+function saveSheet(){
+  if (!currentData || !ASurl) return;
+  const url = `${ASurl}?action=full&keyword=${encodeURIComponent(currentData.keyword)}&audience=${currentData.audience}`;
+  setStatus('saving...');
+  fetch(url)
+    .then(() => { setStatus('saved ✓'); setTimeout(() => setStatus('ready'), 2000); })
+    .catch(() => setStatus('save failed'));
+}
+
+function copyScript(){
+  if (!currentData?.content?.tiktok_script) return;
+  const t = currentData.content.tiktok_script;
+  const text = [
+    `🎬 HOOK:\n${t.hook}`,
+    `\n📢 SCRIPT:\n${t.body}`,
+    `\n✅ CTA:\n${t.cta}`,
+    `\n📎 CAPTION:\n${t.caption}`,
+    `\n${(t.hashtags || []).join(' ')}`,
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('คัดลอก TikTok Script เรียบร้อย!'));
+}
+
+function copyAEO(){
+  if (!currentData?.content?.aeo_answers) return;
+  const text = currentData.content.aeo_answers
+    .map(a => `Q: ${a.question}\nA: ${a.answer}`)
+    .join('\n\n');
+  navigator.clipboard.writeText(text).then(() => alert('คัดลอก AEO Answers เรียบร้อย!'));
+}
+
+function resetAll(){
+  currentData = null;
+  forceHide('results-wrap');
+  forceShow('empty-state');
+  document.getElementById('research-grid').innerHTML = '';
+  document.getElementById('script-block').innerHTML  = '';
+  document.getElementById('aeo-grid').innerHTML      = '';
+  hideErr();
 }
 </script>
 </body>
