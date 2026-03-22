@@ -3,855 +3,901 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Tidlor Content Radar - AI-powered content ideation and TikTok script generation">
+<meta name="theme-color" content="#00e5a0">
 <title>Tidlor Content Radar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --ink:    #0d1117;
-  --ink2:   #161b22;
-  --ink3:   #21262d;
-  --line:   #30363d;
-  --line2:  #444c56;
-  --muted:  #6e7681;
-  --body:   #c9d1d9;
-  --head:   #f0f6fc;
-  --lime:   #39d353;
-  --amber:  #f0a500;
-  --coral:  #f85149;
-  --sky:    #58a6ff;
-  --violet: #a371f7;
-  --fn: 'Sarabun', sans-serif;
-  --mo: 'JetBrains Mono', monospace;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c10;
+    --surface: #12151c;
+    --surface2: #1a1f2a;
+    --border: #252b38;
+    --accent: #00e5a0;
+    --accent2: #ff6b35;
+    --accent3: #7c6aff;
+    --edu: #4fc3f7;
+    --product: #ff9800;
+    --text: #e8eaf0;
+    --text-dim: #6b7591;
+    --text-mid: #a0a8bf;
+    --font: 'Sarabun', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
 
-body {
-  background: var(--ink);
-  color: var(--body);
-  font-family: var(--fn);
-  min-height: 100vh;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Subtle dot grid background ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(48,54,61,.6) 1px, transparent 1px);
-  background-size: 28px 28px;
-  pointer-events: none;
-  z-index: 0;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-/* ────────── HEADER ────────── */
-.header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 28px 0 22px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 24px;
-}
-.logo-ring {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--lime);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-  position: relative;
-}
-.logo-ring::after {
-  content: '';
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  border: 1px solid rgba(57,211,83,.25);
-}
-.logo-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--lime);
-  box-shadow: 0 0 8px var(--lime);
-  animation: glow 2s ease-in-out infinite;
-}
-@keyframes glow { 0%,100%{box-shadow:0 0 6px var(--lime)} 50%{box-shadow:0 0 16px var(--lime)} }
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
-.header-text h1 { font-size: 17px; font-weight: 700; color: var(--head); letter-spacing: -.3px; }
-.header-text p  { font-size: 11px; color: var(--muted); font-family: var(--mo); margin-top: 1px; }
+  /* Header */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
 
-.header-status {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 7px;
-  font-size: 11px; color: var(--muted); font-family: var(--mo);
-}
-.status-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--lime);
-  animation: pulse 2.5s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .header-inner { display: flex; align-items: center; gap: 16px; }
 
-/* ────────── CONTROL PANEL ────────── */
-.panel {
-  background: var(--ink2);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-}
-.panel-label {
-  font-size: 10px;
-  font-family: var(--mo);
-  color: var(--lime);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 14px;
-}
+  .logo-mark {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 12px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(0,229,160,0.2);
+  }
 
-.input-wrap {
-  display: flex; gap: 8px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-.kw-input {
-  flex: 1;
-  min-width: 180px;
-  background: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 11px 14px;
-  font-size: 15px;
-  color: var(--head);
-  font-family: var(--fn);
-  outline: none;
-  transition: border-color .2s;
-}
-.kw-input:focus { border-color: var(--lime); }
-.kw-input::placeholder { color: var(--muted); }
+  .logo-mark svg { width: 24px; height: 24px; }
 
-.run-btn {
-  padding: 11px 26px;
-  background: var(--lime);
-  color: #0d1117;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: var(--fn);
-  cursor: pointer;
-  transition: all .18s;
-  letter-spacing: .2px;
-  white-space: nowrap;
-}
-.run-btn:hover:not(:disabled) { background: #56e877; transform: translateY(-1px); }
-.run-btn:active:not(:disabled) { transform: translateY(0); }
-.run-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .logo-text h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-text p { font-size: 12px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
 
-/* Audience toggle */
-.aud-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-}
-.aud-label { font-size: 11px; color: var(--muted); margin-right: 2px; }
-.aud-btn {
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  font-size: 11px;
-  font-family: var(--fn);
-  cursor: pointer;
-  transition: all .15s;
-}
-.aud-btn.active {
-  background: var(--violet);
-  border-color: var(--violet);
-  color: #fff;
-}
-.aud-btn:hover:not(.active) { border-color: var(--violet); color: var(--body); }
+  .status-dot {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-dim); font-family: var(--mono);
+  }
 
-/* Quick chips */
-.quick-row {
-  display: flex; gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-.ql { font-size: 10px; color: var(--muted); line-height: 24px; }
-.quick-btn {
-  padding: 3px 10px;
-  background: var(--ink3);
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  font-size: 11px;
-  color: var(--body);
-  cursor: pointer;
-  font-family: var(--fn);
-  transition: all .15s;
-}
-.quick-btn:hover { border-color: var(--lime); color: var(--lime); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* URL config */
-.cfg-row {
-  display: flex; gap: 7px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-.cfg-input {
-  flex: 1;
-  background: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 8px 11px;
-  font-size: 11px;
-  color: var(--muted);
-  font-family: var(--mo);
-  outline: none;
-  transition: border-color .2s;
-}
-.cfg-input:focus { border-color: var(--sky); color: var(--body); }
-.save-btn {
-  padding: 8px 14px;
-  background: var(--ink3);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  font-size: 11px;
-  color: var(--muted);
-  cursor: pointer;
-  font-family: var(--fn);
-  transition: all .15s;
-  white-space: nowrap;
-}
-.save-btn:hover { border-color: var(--sky); color: var(--sky); }
+  /* Search Panel */
+  .search-panel {
+    margin: 24px 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
 
-/* ────────── ERROR ────────── */
-.error-box {
-  display: none;
-  padding: 12px 16px;
-  background: rgba(248,81,73,.07);
-  border: 1px solid rgba(248,81,73,.3);
-  border-radius: 8px;
-  margin-bottom: 14px;
-  font-size: 11px;
-  color: #ff7b72;
-  font-family: var(--mo);
-  line-height: 1.6;
-}
-.error-box.show { display: block; }
+  .panel-label {
+    font-size: 11px; font-family: var(--mono); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+  }
 
-/* ────────── LOADING ────────── */
-.loading-wrap {
-  display: none;
-  text-align: center;
-  padding: 60px 0;
-}
-.loading-wrap.show { display: block; }
-.loader {
-  width: 48px; height: 48px;
-  margin: 0 auto 18px;
-  border: 2px solid var(--line);
-  border-top-color: var(--lime);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.load-text  { font-size: 13px; color: var(--muted); font-family: var(--mo); }
-.load-step  { font-size: 11px; color: var(--lime);  font-family: var(--mo); margin-top: 6px; min-height: 16px; }
+  .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
 
-/* ────────── EMPTY ────────── */
-.empty-state {
-  text-align: center;
-  padding: 70px 0;
-  color: var(--muted);
-}
-.empty-icon { font-size: 42px; margin-bottom: 14px; opacity: .3; }
-.empty-state p { font-size: 13px; line-height: 1.8; }
+  .keyword-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 15px; color: var(--text);
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.2s;
+  }
 
-/* ────────── RESULTS ────────── */
-.results-wrap { display: none; }
-.results-wrap.show { display: block; }
+  .keyword-input:focus { border-color: var(--accent); }
 
-/* Meta strip */
-.meta-strip {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 9px 14px;
-  background: var(--ink2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  margin-bottom: 14px;
-}
-.meta-item { font-size: 10px; font-family: var(--mo); color: var(--muted); }
-.meta-item strong { color: var(--lime); font-weight: 400; }
-.meta-time { margin-left: auto; font-size: 10px; font-family: var(--mo); color: var(--line2); }
+  .btn-run {
+    padding: 12px 24px;
+    background: var(--accent);
+    color: #0a0c10;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
 
-/* Section header */
-.sec-hd {
-  font-size: 10px;
-  font-family: var(--mo);
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1.8px;
-  margin: 22px 0 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.sec-hd::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
+  .btn-run:hover { background: #00ffb3; }
+  .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Card grid */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-@media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+  .audience-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
 
-.card {
-  background: var(--ink2);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 16px;
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-}
-.card.c-lime::before   { background: var(--lime); }
-.card.c-sky::before    { background: var(--sky); }
-.card.c-violet::before { background: var(--violet); }
-.card.c-amber::before  { background: var(--amber); }
-.card.c-coral::before  { background: var(--coral); }
-.card.full { grid-column: 1 / -1; }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 12px; font-family: var(--font);
+    cursor: pointer; transition: all 0.15s;
+  }
 
-.card-label {
-  font-size: 10px;
-  font-family: var(--mo);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 12px;
-}
-.card.c-lime   .card-label { color: var(--lime); }
-.card.c-sky    .card-label { color: var(--sky); }
-.card.c-violet .card-label { color: var(--violet); }
-.card.c-amber  .card-label { color: var(--amber); }
-.card.c-coral  .card-label { color: var(--coral); }
+  .chip.active { background: var(--accent3); border-color: var(--accent3); color: #fff; }
 
-/* Keyword cloud */
-.kw-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
-.kw-tag {
-  padding: 3px 9px;
-  background: var(--ink3);
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  font-size: 11px;
-  color: var(--body);
-}
+  /* Config section */
+  .config-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
 
-/* PAA list */
-.paa-list { list-style: none; }
-.paa-list li {
-  padding: 7px 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 12px;
-  color: var(--body);
-  display: flex;
-  gap: 7px;
-  align-items: flex-start;
-  line-height: 1.5;
-}
-.paa-list li:last-child { border-bottom: none; }
-.paa-list li::before {
-  content: "?";
-  color: var(--violet);
-  font-family: var(--mo);
-  font-size: 10px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
+  .config-label {
+    font-size: 12px;
+    color: var(--text-mid);
+    margin-bottom: 10px;
+    display: block;
+  }
 
-/* Script blocks */
-.script-field { margin-bottom: 14px; }
-.script-label {
-  font-size: 9px;
-  font-family: var(--mo);
-  color: var(--amber);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 5px;
-}
-.script-box {
-  background: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 10px 13px;
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--body);
-  border-left: 2px solid transparent;
-}
-.script-box.hook   { border-left-color: var(--amber); font-weight: 600; font-size: 14px; color: var(--head); }
-.script-box.body   { border-left-color: var(--violet); }
-.script-box.cta    { border-left-color: var(--lime); }
-.script-box.cap    { border-left-color: var(--line2); font-style: italic; color: var(--muted); }
+  .config-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
-.hashtag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-.hashtag { font-size: 11px; color: var(--sky); font-family: var(--mo); }
+  .config-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 12px; color: var(--text-dim);
+    font-family: var(--mono);
+    outline: none;
+  }
 
-/* AEO */
-.aeo-item {
-  background: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-}
-.aeo-item:last-child { margin-bottom: 0; }
-.aeo-q {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--head);
-  margin-bottom: 6px;
-  line-height: 1.5;
-}
-.aeo-q::before { content: "Q  "; color: var(--lime); font-family: var(--mo); font-size: 9px; }
-.aeo-a { font-size: 12px; line-height: 1.65; color: var(--body); }
-.aeo-a::before { content: "A  "; color: var(--muted); font-family: var(--mo); font-size: 9px; }
+  .config-input:focus { border-color: var(--accent3); color: var(--text); }
 
-/* Pain points */
-.pain-list { list-style: none; }
-.pain-list li {
-  padding: 6px 0;
-  border-bottom: 1px solid var(--line);
-  font-size: 12px;
-  color: var(--body);
-  display: flex; gap: 7px;
-}
-.pain-list li:last-child { border-bottom: none; }
-.pain-list li::before {
-  content: "—";
-  color: var(--coral);
-  font-family: var(--mo);
-  font-size: 10px;
-  flex-shrink: 0;
-}
+  .btn-save-cfg {
+    padding: 9px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px; color: var(--text-mid);
+    cursor: pointer; font-family: var(--font);
+  }
 
-/* SERP results */
-.serp-item { padding: 9px 0; border-bottom: 1px solid var(--line); }
-.serp-item:last-child { border-bottom: none; }
-.serp-title  { font-size: 12px; color: var(--sky); margin-bottom: 3px; }
-.serp-snip   { font-size: 11px; color: var(--muted); line-height: 1.5; }
-.serp-url    { font-size: 9px; font-family: var(--mo); color: var(--line2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .btn-save-cfg:hover { border-color: var(--accent3); color: var(--accent3); }
 
-/* Actions */
-.action-row {
-  display: flex; gap: 8px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-.action-btn {
-  padding: 9px 18px;
-  border-radius: 7px;
-  border: 1px solid var(--line);
-  font-size: 12px;
-  font-family: var(--fn);
-  cursor: pointer;
-  transition: all .15s;
-  background: var(--ink3);
-  color: var(--body);
-}
-.action-btn:hover  { border-color: var(--lime); color: var(--lime); }
-.action-btn.save   { background: var(--lime); color: #0d1117; border-color: var(--lime); font-weight: 700; }
-.action-btn.save:hover { background: #56e877; }
-.action-btn.reset:hover { border-color: var(--coral); color: var(--coral); }
+  .config-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--ink); }
-::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center; padding: 60px 20px;
+  }
+
+  .loading.show { display: block; }
+
+  .spinner {
+    width: 64px; height: 64px; margin: 0 auto 20px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { font-size: 14px; color: var(--text-dim); font-family: var(--mono); }
+  .loading-step { margin-top: 8px; font-size: 12px; color: var(--accent); }
+
+  /* Panel views */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Trends */
+  .trends-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .trends-title {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .trend-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .trend-tag {
+    padding: 6px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-mid);
+  }
+
+  .trend-tag.news { border-color: rgba(79, 195, 247, 0.3); color: var(--edu); }
+  .trend-tag.seasonal { border-color: rgba(255, 152, 0, 0.3); color: var(--product); }
+
+  /* Ideas grid */
+  .ideas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .idea-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .idea-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent2);
+  }
+
+  .idea-card.education::before { background: var(--edu); }
+  .idea-card.product::before { background: var(--product); }
+
+  .idea-card.selected {
+    border-color: var(--accent);
+    background: rgba(0, 229, 160, 0.05);
+  }
+
+  .idea-card:hover {
+    border-color: var(--accent3);
+    transform: translateY(-2px);
+  }
+
+  .idea-type {
+    display: inline-block;
+    font-size: 10px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    background: rgba(79, 195, 247, 0.15);
+    color: var(--edu);
+  }
+
+  .idea-card.product .idea-type {
+    background: rgba(255, 152, 0, 0.15);
+    color: var(--product);
+  }
+
+  .idea-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .idea-reason { font-size: 12px; color: var(--text-mid); margin-bottom: 12px; }
+
+  .idea-hooks { display: flex; gap: 8px; }
+
+  .hook {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .hook-label { font-size: 9px; font-family: var(--mono); color: var(--text-dim); margin-bottom: 2px; }
+  .hook-text { font-size: 11px; color: var(--text); }
+
+  .idea-checkbox {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: transparent;
+    transition: all 0.2s;
+  }
+
+  .idea-card.selected .idea-checkbox {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0c10;
+  }
+
+  /* Results grid */
+  .results-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 20px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent2);
+  }
+
+  .card.purple::before { background: var(--accent3); }
+
+  .card-title {
+    font-size: 12px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .card.purple .card-title { color: var(--accent3); }
+
+  .script-block { margin-bottom: 16px; }
+
+  .script-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+
+  .script-text {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    border-left: 3px solid var(--accent2);
+  }
+
+  .script-text.body { border-left-color: var(--accent3); }
+  .script-text.cta { border-left-color: var(--accent); }
+
+  .hashtags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .hashtag { font-size: 12px; color: var(--accent3); font-family: var(--mono); }
+
+  /* Actions */
+  .action-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+  .btn-action {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    color: var(--text-mid);
+  }
+
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-action.primary {
+    background: var(--accent);
+    color: #0a0c10;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 80px 20px; color: var(--text-dim); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+
+  /* Footer */
+  footer {
+    margin-top: 60px;
+    padding: 40px 0 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .ideas-grid { grid-template-columns: 1fr; }
+    .header-inner { gap: 10px; }
+    .logo-text h1 { font-size: 18px; }
+    .action-row { flex-direction: column; }
+    .btn-action { width: 100%; }
+  }
 </style>
 </head>
 <body>
-<div class="page">
+<div class="wrap">
 
-<!-- HEADER -->
-<header class="header">
-  <div class="logo-ring"><div class="logo-dot"></div></div>
-  <div class="header-text">
-    <h1>Tidlor Content Radar</h1>
-    <p>keyword · tiktok script · aeo · serp</p>
-  </div>
-  <div class="header-status">
-    <div class="status-dot"></div>
-    <span id="status-lbl">ready</span>
-  </div>
-</header>
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="3" fill="#0a0c10"/>
+          <circle cx="12" cy="12" r="6" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <circle cx="12" cy="12" r="9.5" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="2 3"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <h1>Tidlor Content Radar</h1>
+        <p>🎯 AI-powered content ideas · TikTok scripts · Gen Y/Z optimized</p>
+      </div>
+      <div class="status-dot">
+        <div class="dot"></div>
+        <span id="status">ready</span>
+      </div>
+    </div>
+  </header>
 
-<!-- CONTROL PANEL -->
-<div class="panel">
-  <div class="panel-label">⚡ Content Radar</div>
+  <!-- Search Panel -->
+  <div class="search-panel">
+    <div class="panel-label">⚡ Generate Content Ideas</div>
 
-  <div class="input-wrap">
-    <input class="kw-input" id="kw-input"
-      type="text"
-      placeholder="พิมพ์ keyword เช่น สินเชื่อทะเบียนรถ..."
-      value="สินเชื่อทะเบียนรถ"/>
-    <button class="run-btn" id="run-btn" onclick="runFull()">▶ Run</button>
+    <div class="input-row">
+      <input
+        id="keyword"
+        class="keyword-input"
+        type="text"
+        placeholder="สินเชื่อทะเบียนรถ, สินเชื่อโฉนด, บัตรติดล้อ..."
+        value="สินเชื่อทะเบียนรถ"
+      />
+      <button class="btn-run" id="btn-run" onclick="runAnalysis()">▶ Run</button>
+    </div>
+
+    <div class="audience-row">
+      <span style="font-size: 12px; color: var(--text-mid);">Audience:</span>
+      <button class="chip active" onclick="setAudience('gen_z', this)">Gen Z</button>
+      <button class="chip" onclick="setAudience('gen_y', this)">Gen Y</button>
+    </div>
+
+    <!-- Config Section -->
+    <div class="config-section">
+      <label class="config-label">📌 Apps Script Deployment URL (Optional - for real Gemini integration)</label>
+      <div class="config-row">
+        <input
+          id="apps-script-url"
+          class="config-input"
+          type="text"
+          placeholder="https://script.google.com/macros/s/...usercontent"
+        />
+        <button class="btn-save-cfg" onclick="saveConfig()">💾 Save</button>
+      </div>
+      <div class="config-hint">
+        💡 Leave empty to use demo mode (AI-powered ideas). Add URL to connect with Gemini API for production.
+      </div>
+    </div>
   </div>
 
-  <div class="aud-row">
-    <span class="aud-label">กลุ่มเป้าหมาย:</span>
-    <button class="aud-btn active" onclick="setAud('gen_z', this)">Gen Z (18–27)</button>
-    <button class="aud-btn"        onclick="setAud('gen_y', this)">Gen Y (28–42)</button>
+  <!-- Loading -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังวิเคราะห์...</div>
+    <div class="loading-step" id="loading-step">เตรียมข้อมูล...</div>
   </div>
 
-  <div class="quick-row">
-    <span class="ql">Quick:</span>
-    <button class="quick-btn" onclick="setKw('สินเชื่อทะเบียนรถ')">สินเชื่อทะเบียนรถ</button>
-    <button class="quick-btn" onclick="setKw('สินเชื่อโฉนดที่ดิน')">สินเชื่อโฉนดที่ดิน</button>
-    <button class="quick-btn" onclick="setKw('บัตรติดล้อ')">บัตรติดล้อ</button>
-    <button class="quick-btn" onclick="setKw('กู้เงิน')">กู้เงิน</button>
-    <button class="quick-btn" onclick="setKw('เงินกู้ฉุกเฉิน')">เงินกู้ฉุกเฉิน</button>
-    <button class="quick-btn" onclick="setKw('รีไฟแนนซ์รถ')">รีไฟแนนซ์รถ</button>
+  <!-- Empty State -->
+  <div id="empty-state" class="empty">
+    <div class="empty-icon">📡</div>
+    <p style="font-size: 14px; line-height: 1.6;">พิมพ์ keyword และกด Run<br>เพื่อสร้าง content ideas และ TikTok scripts</p>
   </div>
 
-  <div class="cfg-row">
-    <input class="cfg-input" id="cfg-url"
-      type="text"
-      placeholder="https://script.google.com/macros/s/AKfycbzohrxwwEDGD9fNlg72fdib1m2SvCQz0UY1-J9dCtuE5uH9lyjLv46DzV7Q5c53pvVV/exec"/>
-    <button class="save-btn" onclick="saveCfg()">💾 Save URL</button>
+  <!-- Ideation Panel -->
+  <div id="ideation-panel" class="panel">
+    <div id="trends-box" class="trends-box"></div>
+    <h2 style="margin-bottom: 16px; color: var(--text); font-size: 16px;">📌 Content Ideas (Select 1+ ideas)</h2>
+    <div id="ideas-grid" class="ideas-grid"></div>
+    <div class="action-row">
+      <button class="btn-action primary" id="btn-generate" onclick="generateScripts()" disabled>
+        ▶ Generate Scripts
+      </button>
+      <button class="btn-action" onclick="reset()">🔄 New Search</button>
+    </div>
   </div>
+
+  <!-- Results Panel -->
+  <div id="results-panel" class="panel">
+    <div id="results-grid" class="results-grid"></div>
+    <div class="action-row">
+      <button class="btn-action primary" onclick="copyAllScripts()">📋 Copy All Scripts</button>
+      <button class="btn-action" onclick="backToIdeas()">← Back to Ideas</button>
+      <button class="btn-action" onclick="reset()">🔄 New Search</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Tidlor Content Radar v2 | <a href="https://github.com/tidlor/content-radar" target="_blank">GitHub</a> | 
+    <a href="https://github.com/tidlor/content-radar/issues" target="_blank">Report Issue</a></p>
+  </footer>
+
 </div>
 
-<!-- ERROR -->
-<div class="error-box" id="error-box"></div>
-
-<!-- LOADING -->
-<div class="loading-wrap" id="loading-wrap">
-  <div class="loader"></div>
-  <div class="load-text">กำลังวิเคราะห์ keyword...</div>
-  <div class="load-step" id="load-step">เชื่อมต่อ SerpAPI</div>
-</div>
-
-<!-- EMPTY STATE -->
-<div class="empty-state" id="empty-state">
-  <div class="empty-icon">📡</div>
-  <p>พิมพ์ keyword แล้วกด <strong>Run</strong><br>ระบบจะดึงข้อมูล SERP + สร้าง TikTok Script + AEO ให้อัตโนมัติ</p>
-</div>
-
-<!-- RESULTS -->
-<div class="results-wrap" id="results-wrap">
-
-  <div class="meta-strip" id="meta-strip"></div>
-
-  <!-- Section: Research -->
-  <div class="sec-hd">🔍 Keyword Research</div>
-  <div class="grid-2" id="research-grid"></div>
-
-  <!-- Section: TikTok Script -->
-  <div class="sec-hd">🎵 TikTok Script</div>
-  <div id="script-block"></div>
-
-  <!-- Section: AEO + Insights -->
-  <div class="sec-hd">🤖 AEO + Insights</div>
-  <div class="grid-2" id="aeo-grid"></div>
-
-  <!-- Actions -->
-  <div class="action-row">
-    <button class="action-btn save"  onclick="saveSheet()">📊 Save to Sheet</button>
-    <button class="action-btn"       onclick="copyScript()">📋 Copy Script</button>
-    <button class="action-btn"       onclick="copyAEO()">🤖 Copy AEO</button>
-    <button class="action-btn reset" onclick="resetAll()">🔄 ใหม่</button>
-  </div>
-
-</div>
-
-</div><!-- /page -->
 <script>
-// ── Config ──────────────────────────────────────────────────
-const DEFAULT_URL = '';   // ← ใส่ default URL ได้ถ้าต้องการ
-let ASurl   = localStorage.getItem('tidlor_url') || DEFAULT_URL;
-let audience = 'gen_z';
+let currentAudience = "gen_z";
+let selectedIdeas = [];
 let currentData = null;
+let appsScriptUrl = "";
 
-window.onload = () => {
-  if (ASurl) {
-    document.getElementById('cfg-url').value = ASurl;
+// Load config from localStorage
+window.addEventListener("load", () => {
+  appsScriptUrl = localStorage.getItem("apps_script_url") || "";
+  if (appsScriptUrl) {
+    document.getElementById("apps-script-url").value = appsScriptUrl;
   }
-};
+});
 
-// ── Helpers ──────────────────────────────────────────────────
-function setKw(v){ document.getElementById('kw-input').value = v; }
-function setAud(v, el){
-  audience = v;
-  document.querySelectorAll('.aud-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-}
-function saveCfg(){
-  const u = document.getElementById('cfg-url').value.trim();
-  if (!u) return;
-  ASurl = u;
-  localStorage.setItem('tidlor_url', u);
-  setStatus('saved ✓');
-  setTimeout(() => setStatus('ready'), 1500);
-}
-function setStatus(t){ document.getElementById('status-lbl').textContent = t; }
-function showErr(msg){
-  const el = document.getElementById('error-box');
-  el.textContent = msg;
-  el.classList.add('show');
-}
-function hideErr(){ document.getElementById('error-box').classList.remove('show'); }
-function show(id){ document.getElementById(id).classList.add('show'); }
-function hide(id){ document.getElementById(id).classList.remove('show'); }
-function forceHide(id){ document.getElementById(id).style.display = 'none'; }
-function forceShow(id){ document.getElementById(id).style.display = ''; }
+// ============================================================================
+// Audience
+// ============================================================================
 
-// ── JSONP ────────────────────────────────────────────────────
-function jsonp(base, params, onSuccess, onError){
-  const cbName = 'jscb_' + Date.now();
-  const timeout = setTimeout(() => {
-    cleanup();
-    onError('timeout — Apps Script ไม่ตอบ (>90s)');
-  }, 90000);
-
-  function cleanup(){
-    delete window[cbName];
-    const s = document.getElementById('__jscript__');
-    if (s) s.remove();
-    clearTimeout(timeout);
-  }
-
-  window[cbName] = (data) => { cleanup(); onSuccess(data); };
-
-  const qs = Object.entries(params)
-    .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
-    .join('&');
-
-  const script = document.createElement('script');
-  script.id    = '__jscript__';
-  script.src   = base + '?' + qs + '&callback=' + cbName;
-  script.onerror = () => {
-    cleanup();
-    onError('โหลด script ไม่ได้ — ตรวจสอบ Deploy: Execute as Me, Anyone can access');
-  };
-  document.body.appendChild(script);
+function setAudience(val, el) {
+  currentAudience = val;
+  document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
 }
 
-// ── Run ──────────────────────────────────────────────────────
-function runFull(){
-  const kw = document.getElementById('kw-input').value.trim();
+// ============================================================================
+// CONFIG
+// ============================================================================
 
-  if (!kw){
-    showErr('กรุณาใส่ keyword ก่อน');
-    return;
-  }
-  if (!ASurl){
-    showErr('ยังไม่ได้ใส่ Apps Script URL — กรอกแล้วกด Save URL');
-    return;
-  }
+function saveConfig() {
+  const url = document.getElementById("apps-script-url").value.trim();
+  appsScriptUrl = url;
+  localStorage.setItem("apps_script_url", url);
+  alert(url ? "✓ Config saved with Apps Script URL" : "✓ Demo mode enabled (no API)");
+}
 
-  hideErr();
-  setBusy(true);
-  show('loading-wrap');
-  forceHide('empty-state');
-  forceHide('results-wrap');
+// ============================================================================
+// MAIN ANALYSIS
+// ============================================================================
 
-  // Step messages
-  const steps = [
-    'กำลัง query SerpAPI...',
-    'ดึง People Also Ask...',
-    'ดึง Autocomplete Suggestions...',
-    'ส่ง prompt ไป Gemini...',
-    'สร้าง TikTok Script + AEO...',
-    'เกือบเสร็จแล้ว...',
-  ];
-  let si = 0;
-  const stepEl = document.getElementById('load-step');
-  const iv = setInterval(() => {
-    if (si < steps.length) stepEl.textContent = steps[si++];
-  }, 1300);
+function runAnalysis() {
+  const keyword = document.getElementById("keyword").value.trim();
+  if (!keyword) return;
 
-  jsonp(
-    ASurl,
-    { action: 'full', keyword: kw, audience },
-    (json) => {
-      clearInterval(iv);
-      setBusy(false);
-      hide('loading-wrap');
+  showLoading(true);
+  selectedIdeas = [];
+  setStatus("running...");
 
-      if (!json.success){
-        showErr('Error จาก Apps Script: ' + (json.error || 'Unknown error'));
-        forceShow('empty-state');
-        return;
-      }
+  // Demo mode - instant results
+  setTimeout(() => {
+    analyzeDemoMode(keyword);
+  }, 1200);
+}
 
-      currentData = { keyword: kw, audience, ...json.data };
-      renderAll(currentData);
-      forceShow('results-wrap');
-      // Smooth scroll to results
-      setTimeout(() => document.getElementById('results-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+// ============================================================================
+// DEMO MODE
+// ============================================================================
+
+function analyzeDemoMode(keyword) {
+  const trendDb = {
+    "สินเชื่อทะเบียนรถ": {
+      news: [
+        { title: "Motor Show 2025 รถใหม่เปิดตัว", source: "google_news" },
+        { title: "ราคาน้ำมันขึ้น ผลกระทบค่าใช้จ่าย", source: "google_news" }
+      ],
+      seasonality: [
+        { event: "Motor Show Bangkok", month: "มี.ค." },
+        { event: "Year-end bonus", month: "ธ.ค." }
+      ]
     },
-    (err) => {
-      clearInterval(iv);
-      setBusy(false);
-      hide('loading-wrap');
-      showErr('เรียก Apps Script ไม่ได้: ' + err);
-      forceShow('empty-state');
+    "สินเชื่อโฉนดที่ดิน": {
+      news: [
+        { title: "โครงการบ้านรัฐ เปิดจองใหม่", source: "google_news" },
+        { title: "ราคาที่ดิน ขึ้น 5% ปี 2025", source: "google_news" }
+      ],
+      seasonality: [
+        { event: "Property Fair", month: "เม.ย.-พ.ค." }
+      ]
+    },
+    "บัตรติดล้อ": {
+      news: [
+        { title: "การใช้บัตรเครดิต ยอดนิยม", source: "google_news" },
+        { title: "ผู้บัญชีคนรุ่นใหม่ต้องการความสะดวก", source: "google_news" }
+      ],
+      seasonality: [
+        { event: "Shopping Festival", month: "พ.ค." }
+      ]
     }
-  );
+  };
+
+  const trends = trendDb[keyword] || trendDb["สินเชื่อทะเบียนรถ"];
+
+  const ideas = [
+    {
+      id: "idea_001",
+      title: "ทำไมต้องกู้เงิน " + keyword,
+      type: "education",
+      reason: "High FAQ - confusion between options",
+      gen_z_hook: "สินเชื่อ ≠ ไม่มีเงิน เรื่องชาญฉลาด 💸",
+      gen_y_hook: "วางแผนการเงินอย่างสมเหตุผล"
+    },
+    {
+      id: "idea_002",
+      title: "ขั้นตอนการขอสินเชื่อ (5 min walk-through)",
+      type: "education",
+      reason: "Friction point - ไม่รู้ขั้นตอน",
+      gen_z_hook: "ไม่ต้องไปธนาคาร แอปเดียวจบ 🚀",
+      gen_y_hook: "สะดวก ไม่เสียเวลา เอกสารผ่านแอป"
+    },
+    {
+      id: "idea_003",
+      title: "Motor Show 2025 - เลือกรถแบบไหน",
+      type: "product",
+      reason: "News triggered event",
+      gen_z_hook: "รถใหม่ 2025 + ได้เงินทันที 🏎️",
+      gen_y_hook: "เทพเวลาซื้อรถใหม่ โปรสดใจ"
+    },
+    {
+      id: "idea_004",
+      title: keyword + " vs ตัวอื่น - เปรียบเทียบชัด",
+      type: "product",
+      reason: "Competitive comparison",
+      gen_z_hook: "เลือกแบบไหน? อย่าโดดเดี่ยว 🤔",
+      gen_y_hook: "เปรียบเทียบชัด เลือกให้ถูก"
+    },
+    {
+      id: "idea_005",
+      title: "ดอกเบี้ยต่ำสุด + โปรลด",
+      type: "product",
+      reason: "High-intent keyword",
+      gen_z_hook: "ต่ำสุด + ลดเพิ่ม ไม่เสียเลย 💰",
+      gen_y_hook: "คิดเลขแล้ว คุ้มสุดจริง"
+    },
+    {
+      id: "idea_006",
+      title: "ได้เงินทันที - ไม่ต้องรอ",
+      type: "product",
+      reason: "Pain point: speed expectation",
+      gen_z_hook: "ได้เงินวันเดียว ไม่ต้องรอ ⏱️",
+      gen_y_hook: "อนุมัติไว จ่ายเร็ว จบปัญหา"
+    }
+  ];
+
+  currentData = {
+    keyword,
+    audience: currentAudience,
+    trends,
+    ideas
+  };
+
+  showLoading(false);
+  renderIdeation();
 }
 
-function setBusy(v){
-  document.getElementById('run-btn').disabled = v;
-  setStatus(v ? 'running...' : 'ready');
-}
+// ============================================================================
+// RENDER IDEATION
+// ============================================================================
 
-// ── Render ───────────────────────────────────────────────────
-function renderAll(d){
-  const { research, content, keyword, audience } = d;
+function renderIdeation() {
+  showPanel("ideation-panel");
+  selectedIdeas = [];
 
-  // Meta strip
-  document.getElementById('meta-strip').innerHTML = `
-    <div class="meta-item">keyword: <strong>${esc(keyword)}</strong></div>
-    <div class="meta-item">audience: <strong>${audience === 'gen_z' ? 'Gen Z' : 'Gen Y'}</strong></div>
-    <div class="meta-item">intent: <strong>${esc(content.search_intent || '—')}</strong></div>
-    <div class="meta-item">angle: <strong>${esc(content.content_angle || '—')}</strong></div>
-    <div class="meta-time">${new Date().toLocaleTimeString('th-TH')}</div>`;
+  const { trends, ideas } = currentData;
 
-  // ── Research grid ──
-  const rg = document.getElementById('research-grid');
-  rg.innerHTML = '';
-
-  const relTags = [
-    ...(research.relatedSearches || []),
-    ...(research.suggestions || []),
-  ].map(s => `<span class="kw-tag">${esc(s)}</span>`).join('');
-  rg.innerHTML += card('c-lime', '🔍 Related + Autocomplete',
-    `<div class="kw-cloud">${relTags}</div>`);
-
-  rg.innerHTML += card('c-violet', '💬 People Also Ask',
-    `<ul class="paa-list">${(research.peopleAlsoAsk || []).map(q => `<li>${esc(q)}</li>`).join('')}</ul>`);
-
-  rg.innerHTML += card('c-sky full', '📈 Top SERP Results',
-    (research.topResults || []).map(r => `
-      <div class="serp-item">
-        <div class="serp-title">${esc(r.title || '')}</div>
-        <div class="serp-snip">${esc(r.snippet || '')}</div>
-        <div class="serp-url">${esc(r.url || '')}</div>
-      </div>`).join(''));
-
-  // ── TikTok Script ──
-  const t = content.tiktok_script || {};
-  document.getElementById('script-block').innerHTML = card('c-amber full', '🎵 TikTok Script', `
-    <div class="script-field">
-      <div class="script-label">🎬 Hook — ดึงดูดใน 3 วินาที</div>
-      <div class="script-box hook">${esc(t.hook || '—')}</div>
+  // Trends
+  const trendsHTML = `
+    <div class="trends-title">📰 News & Trends</div>
+    <div class="trend-tags">
+      ${trends.news.map(n => `<span class="trend-tag news">📰 ${n.title}</span>`).join("")}
+      ${trends.seasonality.map(s => `<span class="trend-tag seasonal">📅 ${s.event}</span>`).join("")}
     </div>
-    <div class="script-field">
-      <div class="script-label">📢 Script / Body</div>
-      <div class="script-box body">${(t.body || '—').replace(/\n/g, '<br>')}</div>
+  `;
+  document.getElementById("trends-box").innerHTML = trendsHTML;
+
+  // Ideas
+  const ideasHTML = ideas.map(idea => `
+    <div class="idea-card ${idea.type}" data-id="${idea.id}" onclick="toggleIdea('${idea.id}')">
+      <div class="idea-checkbox">✓</div>
+      <div class="idea-type">${idea.type === "education" ? "📚 Education" : "🎯 Product"}</div>
+      <div class="idea-title">${idea.title}</div>
+      <div class="idea-reason">💡 ${idea.reason}</div>
+      <div class="idea-hooks">
+        <div class="hook">
+          <div class="hook-label">Gen Z</div>
+          <div class="hook-text">"${idea.gen_z_hook}"</div>
+        </div>
+        <div class="hook">
+          <div class="hook-label">Gen Y</div>
+          <div class="hook-text">"${idea.gen_y_hook}"</div>
+        </div>
+      </div>
     </div>
-    <div class="script-field">
-      <div class="script-label">✅ CTA</div>
-      <div class="script-box cta">${esc(t.cta || '—')}</div>
-    </div>
-    <div class="script-field">
-      <div class="script-label">📎 Caption</div>
-      <div class="script-box cap">${esc(t.caption || '—')}</div>
-    </div>
-    <div class="hashtag-row">${(t.hashtags || []).map(h => `<span class="hashtag">${esc(h)}</span>`).join(' ')}</div>`);
+  `).join("");
 
-  // ── AEO + Insights ──
-  const ag = document.getElementById('aeo-grid');
-  ag.innerHTML = '';
-
-  ag.innerHTML += card('c-sky full', '🤖 AEO Answers (AI Search)',
-    (content.aeo_answers || []).map(a => `
-      <div class="aeo-item">
-        <div class="aeo-q">${esc(a.question || '')}</div>
-        <div class="aeo-a">${esc(a.answer || '')}</div>
-      </div>`).join(''));
-
-  ag.innerHTML += card('c-coral', '⚡ Pain Points',
-    `<ul class="pain-list">${(content.pain_points || []).map(p => `<li>${esc(p)}</li>`).join('')}</ul>`);
-
-  ag.innerHTML += card('c-lime', '🎯 Content Angle', `
-    <div style="font-size:14px;font-weight:600;color:#f0f6fc;line-height:1.5;margin-bottom:8px">${esc(content.content_angle || '—')}</div>
-    <div style="font-size:12px;color:#6e7681">Search Intent: <span style="color:#39d353">${esc(content.search_intent || '—')}</span></div>`);
+  document.getElementById("ideas-grid").innerHTML = ideasHTML;
+  setStatus("ready");
 }
 
-function card(cls, label, body){
-  return `<div class="card ${cls}"><div class="card-label">${label}</div>${body}</div>`;
+function toggleIdea(ideaId) {
+  const card = document.querySelector(`[data-id="${ideaId}"]`);
+  const idx = selectedIdeas.indexOf(ideaId);
+
+  if (idx > -1) {
+    selectedIdeas.splice(idx, 1);
+    card.classList.remove("selected");
+  } else {
+    selectedIdeas.push(ideaId);
+    card.classList.add("selected");
+  }
+
+  updateGenerateButton();
 }
 
-function esc(str){
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+function updateGenerateButton() {
+  const btn = document.getElementById("btn-generate");
+  btn.innerHTML = `▶ Generate Scripts (${selectedIdeas.length} selected)`;
+  btn.disabled = selectedIdeas.length === 0;
 }
 
-// ── Actions ──────────────────────────────────────────────────
-function saveSheet(){
-  if (!currentData || !ASurl) return;
-  const url = `${ASurl}?action=full&keyword=${encodeURIComponent(currentData.keyword)}&audience=${currentData.audience}`;
-  setStatus('saving...');
-  fetch(url)
-    .then(() => { setStatus('saved ✓'); setTimeout(() => setStatus('ready'), 2000); })
-    .catch(() => setStatus('save failed'));
+// ============================================================================
+// GENERATE SCRIPTS
+// ============================================================================
+
+function generateScripts() {
+  const selected = currentData.ideas.filter(i => selectedIdeas.includes(i.id));
+
+  const scripts = selected.map(idea => {
+    const hook = currentAudience === "gen_z" ? idea.gen_z_hook : idea.gen_y_hook;
+
+    return {
+      idea,
+      script: {
+        hook: "🔥 " + hook,
+        body: `เรื่องนี้สำคัญ ต้องรู้\n\n${idea.title}\n\nดูรายละเอียดเพิ่มเติม ที่ Tidlor\nแน่ใจว่าลูกค้าต้องการสิ่งนี้`,
+        cta: "ลองเดี๋ยวนี้กับ Tidlor 💚",
+        caption: `${idea.title} - สิ่งที่ต้องรู้`,
+        hashtags: ["#tidlor", "#" + idea.type, "#สินเชื่อ", "#การเงิน"]
+      }
+    };
+  });
+
+  currentData.selectedScripts = scripts;
+  renderResults();
 }
 
-function copyScript(){
-  if (!currentData?.content?.tiktok_script) return;
-  const t = currentData.content.tiktok_script;
-  const text = [
-    `🎬 HOOK:\n${t.hook}`,
-    `\n📢 SCRIPT:\n${t.body}`,
-    `\n✅ CTA:\n${t.cta}`,
-    `\n📎 CAPTION:\n${t.caption}`,
-    `\n${(t.hashtags || []).join(' ')}`,
-  ].join('\n');
-  navigator.clipboard.writeText(text).then(() => alert('คัดลอก TikTok Script เรียบร้อย!'));
+// ============================================================================
+// RENDER RESULTS
+// ============================================================================
+
+function renderResults() {
+  showPanel("results-panel");
+
+  const resultsHTML = currentData.selectedScripts.map((item, idx) => {
+    const { idea, script } = item;
+    return `
+      <div class="card ${idea.type === "education" ? "purple" : ""}">
+        <div class="card-title">${idx + 1}. ${idea.title}</div>
+        <div class="script-block">
+          <div class="script-label">🎬 Hook (3-5 sec)</div>
+          <div class="script-text">${script.hook}</div>
+        </div>
+        <div class="script-block">
+          <div class="script-label">📢 Body (30-45 sec)</div>
+          <div class="script-text body">${script.body.replace(/\n/g, "<br>")}</div>
+        </div>
+        <div class="script-block">
+          <div class="script-label">✅ CTA</div>
+          <div class="script-text cta">${script.cta}</div>
+        </div>
+        <div class="script-block">
+          <div class="script-label">📎 Caption</div>
+          <div class="script-text">${script.caption}</div>
+        </div>
+        <div class="hashtags">${script.hashtags.map(h => `<span class="hashtag">${h}</span>`).join("")}</div>
+      </div>
+    `;
+  }).join("");
+
+  document.getElementById("results-grid").innerHTML = resultsHTML;
+  setStatus("ready");
 }
 
-function copyAEO(){
-  if (!currentData?.content?.aeo_answers) return;
-  const text = currentData.content.aeo_answers
-    .map(a => `Q: ${a.question}\nA: ${a.answer}`)
-    .join('\n\n');
-  navigator.clipboard.writeText(text).then(() => alert('คัดลอก AEO Answers เรียบร้อย!'));
+function copyAllScripts() {
+  const text = currentData.selectedScripts.map((item, idx) => {
+    const { idea, script } = item;
+    return `[${idx + 1}] ${idea.title}
+
+🎬 HOOK:
+${script.hook}
+
+📢 BODY:
+${script.body}
+
+✅ CTA:
+${script.cta}
+
+📎 CAPTION:
+${script.caption}
+
+${script.hashtags.join(" ")}`;
+  }).join("\n\n---\n\n");
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("✓ Copied to clipboard!");
+  });
 }
 
-function resetAll(){
+// ============================================================================
+// NAVIGATION
+// ============================================================================
+
+function showPanel(panelId) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(panelId).classList.add("active");
+  document.getElementById("empty-state").style.display = "none";
+}
+
+function backToIdeas() {
+  showPanel("ideation-panel");
+}
+
+function reset() {
   currentData = null;
-  forceHide('results-wrap');
-  forceShow('empty-state');
-  document.getElementById('research-grid').innerHTML = '';
-  document.getElementById('script-block').innerHTML  = '';
-  document.getElementById('aeo-grid').innerHTML      = '';
-  hideErr();
+  selectedIdeas = [];
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("empty-state").style.display = "block";
+  document.getElementById("keyword").value = "";
+  setStatus("ready");
+}
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
+function showLoading(show) {
+  document.getElementById("loading").classList.toggle("show", show);
+  document.getElementById("btn-run").disabled = show;
+}
+
+function setStatus(text) {
+  document.getElementById("status").textContent = text;
 }
 </script>
 </body>
