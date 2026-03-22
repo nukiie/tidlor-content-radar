@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tidlor Content Radar - 3 Pages</title>
+<meta name="description" content="Tidlor Content Radar v3 - Real-time Auto-fetch SerpAPI + Gemini">
+<meta name="theme-color" content="#00e5a0">
+<title>Tidlor Content Radar v3 - Auto-fetch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 <style>
   :root {
     --bg: #0a0c10;
@@ -16,161 +17,250 @@
     --accent: #00e5a0;
     --accent2: #ff6b35;
     --accent3: #7c6aff;
+    --accent4: #ff4081;
+    --edu: #4fc3f7;
+    --commercial: #ffb300;
     --text: #e8eaf0;
     --text-dim: #6b7591;
+    --text-mid: #a0a8bf;
     --font: 'Sarabun', sans-serif;
     --mono: 'IBM Plex Mono', monospace;
   }
-
+ 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--font);
     min-height: 100vh;
-    padding: 20px;
+    overflow-x: hidden;
   }
-
-  .wrap { max-width: 1200px; margin: 0 auto; }
-
+ 
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+ 
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+ 
+  /* Header */
   header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 0;
+    padding: 28px 0 20px;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 30px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
   }
-
-  .logo { display: flex; align-items: center; gap: 12px; }
+ 
+  .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+ 
+  .logo { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+ 
   .logo-mark {
-    width: 40px; height: 40px;
-    background: var(--accent);
-    border-radius: 8px;
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    border-radius: 10px;
     display: grid; place-items: center;
+    box-shadow: 0 0 20px rgba(0,229,160,0.2);
   }
-  .logo h1 { font-size: 18px; font-weight: 700; }
-  .logo p { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
-
-  .nav-tabs {
-    display: flex;
-    gap: 8px;
-  }
-
-  .nav-tab {
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-mid);
-    font-size: 12px;
-    font-family: var(--font);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .nav-tab:hover { border-color: var(--accent3); color: var(--accent3); }
-  .nav-tab.active {
-    background: var(--accent3);
-    border-color: var(--accent3);
-    color: #fff;
-  }
-
-  .page { display: none; }
-  .page.active { display: block; animation: fadeIn 0.3s; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .panel {
+ 
+  .logo-text h1 { font-size: 20px; font-weight: 700; }
+  .logo-text p { font-size: 11px; color: var(--text-dim); font-family: var(--mono); margin-top: 2px; }
+ 
+  .status-dot { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+ 
+  /* Search Panel */
+  .search-panel {
+    margin: 24px 0;
+    padding: 24px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    border-radius: 14px;
   }
-
-  .panel-title {
-    font-size: 11px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-    font-weight: 600;
+ 
+  .panel-label {
+    font-size: 10px; font-family: var(--mono); color: var(--accent);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
   }
-
-  .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
-
-  input, select {
+ 
+  .search-row { display: flex; gap: 10px; margin-bottom: 14px; }
+ 
+  .keyword-input {
     flex: 1;
-    padding: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 15px; color: var(--text);
+    font-family: var(--font);
+    outline: none;
+    transition: all 0.2s;
+  }
+ 
+  .keyword-input:focus { border-color: var(--accent); box-shadow: 0 0 12px rgba(0,229,160,0.1); }
+ 
+  .autocomplete-list {
+    display: none;
+    position: absolute;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    outline: none;
+    margin-top: -8px;
+    z-index: 100;
+    max-width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
   }
-
-  input:focus, select:focus { border-color: var(--accent); }
-
-  button {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    font-family: var(--font);
-    font-size: 12px;
-    font-weight: 600;
+ 
+  .autocomplete-list.show { display: block; }
+ 
+  .autocomplete-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
     cursor: pointer;
-    transition: all 0.2s;
-    margin-right: 10px;
+    font-size: 13px;
+    transition: background 0.1s;
   }
-
-  .btn-primary {
+ 
+  .autocomplete-item:hover { background: var(--surface); }
+ 
+  .btn-run {
+    padding: 12px 28px;
     background: var(--accent);
     color: #0a0c10;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
   }
-
-  .btn-primary:hover { background: #00ffb3; }
-  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .btn-secondary {
+ 
+  .btn-run:hover { background: #00ffb3; transform: translateY(-2px); }
+  .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
+  .config-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+ 
+  .config-row { display: flex; gap: 8px; margin-bottom: 10px; }
+ 
+  .config-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 11px; color: var(--text-dim);
+    font-family: var(--mono);
+    outline: none;
+  }
+ 
+  .config-input:focus { border-color: var(--accent3); color: var(--text); }
+ 
+  .btn-config {
+    padding: 9px 16px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    color: var(--text-mid);
-  }
-
-  .btn-secondary:hover { border-color: var(--accent3); color: var(--accent3); }
-
-  .status {
-    padding: 12px;
     border-radius: 8px;
-    margin-top: 12px;
-    font-size: 11px;
-    display: none;
-    font-family: var(--mono);
+    font-size: 11px; color: var(--text-mid);
+    cursor: pointer; font-family: var(--font);
   }
-
-  .status.show { display: block; }
-  .status.success { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--accent); }
-  .status.error { background: rgba(255,59,48,0.1); border: 1px solid rgba(255,59,48,0.3); color: #ff8080; }
-  .status.loading { background: rgba(124,106,255,0.1); border: 1px solid rgba(124,106,255,0.3); color: var(--accent3); }
-
+ 
+  .btn-config:hover { border-color: var(--accent3); color: var(--accent3); }
+ 
+  /* Loading & Status */
+  .loading {
+    display: none;
+    text-align: center; padding: 40px 20px;
+  }
+ 
+  .loading.show { display: block; }
+ 
+  .spinner {
+    width: 48px; height: 48px; margin: 0 auto 16px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+ 
+  @keyframes spin { to { transform: rotate(360deg); } }
+ 
+  .loading-text { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+  .loading-step { margin-top: 6px; font-size: 11px; color: var(--accent); }
+ 
+  .error-box {
+    display: none;
+    background: rgba(255, 64, 129, 0.1);
+    border: 1px solid var(--accent4);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 12px 0;
+    font-size: 12px;
+    color: var(--accent4);
+  }
+ 
+  .error-box.show { display: block; }
+ 
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+ 
+  .tab-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+ 
+  .tab-btn.active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+  }
+ 
+  /* Cards Grid */
   .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
     margin-bottom: 20px;
   }
-
+ 
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 18px;
     position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
   }
-
+ 
   .card::before {
     content: '';
     position: absolute;
@@ -178,458 +268,708 @@
     height: 2px;
     background: var(--accent2);
   }
-
+ 
+  .card.paa::before { background: var(--edu); }
+  .card.related::before { background: var(--accent3); }
+  .card.pain::before { background: var(--accent4); }
+  .card.aeo::before { background: var(--commercial); }
+  .card.serp::before { background: var(--accent); }
+ 
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,229,160,0.1);
+  }
+ 
   .card-title {
     font-size: 11px;
+    font-family: var(--mono);
+    text-transform: uppercase;
     color: var(--accent2);
-    text-transform: uppercase;
     margin-bottom: 10px;
-    font-family: var(--mono);
+    letter-spacing: 0.8px;
   }
-
+ 
+  .card.paa .card-title { color: var(--edu); }
+  .card.related .card-title { color: var(--accent3); }
+  .card.pain .card-title { color: var(--accent4); }
+  .card.aeo .card-title { color: var(--commercial); }
+  .card.serp .card-title { color: var(--accent); }
+ 
   .card-content {
-    font-size: 12px;
-    color: var(--text-mid);
-    line-height: 1.5;
-    white-space: pre-line;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-
-  .idea-card {
+ 
+  .card-item {
+    padding: 8px;
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 10px;
+    border-radius: 6px;
+    border-left: 2px solid var(--accent2);
+    font-size: 12px;
+    line-height: 1.5;
   }
-
-  .idea-card:hover { border-color: var(--accent); }
-
-  .idea-type {
-    display: inline-block;
-    font-size: 9px;
-    color: var(--accent3);
-    text-transform: uppercase;
-    margin-bottom: 4px;
+ 
+  .card.paa .card-item { border-left-color: var(--edu); }
+  .card.related .card-item { border-left-color: var(--accent3); }
+  .card.pain .card-item { border-left-color: var(--accent4); }
+  .card.aeo .card-item { border-left-color: var(--commercial); }
+  .card.serp .card-item { border-left-color: var(--accent); }
+ 
+  .card-item-label {
+    font-size: 10px;
+    color: var(--text-dim);
     font-family: var(--mono);
+    margin-bottom: 2px;
   }
-
-  .idea-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .idea-hooks { font-size: 11px; color: var(--text-dim); }
-
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+ 
+  .card-item-text {
+    color: var(--text);
+    font-size: 13px;
   }
-
-  .dashboard-card {
+ 
+  /* TikTok Scripts */
+  .script-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
   }
-
-  .dashboard-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  .dashboard-content { font-size: 11px; color: var(--text-mid); line-height: 1.6; }
-
-  .keyword-badge {
+ 
+  .script-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--edu);
+  }
+ 
+  .script-card.commercial::before { background: var(--commercial); }
+ 
+  .script-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+ 
+  .script-type {
     display: inline-block;
-    background: var(--accent3);
-    color: #fff;
-    padding: 2px 6px;
-    border-radius: 4px;
     font-size: 9px;
-    margin-bottom: 6px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: rgba(79, 195, 247, 0.15);
+    color: var(--edu);
+    flex-shrink: 0;
   }
-
-  .filter-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  .filter-btn {
-    padding: 6px 12px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 16px;
+ 
+  .script-card.commercial .script-type {
+    background: rgba(255, 179, 0, 0.15);
+    color: var(--commercial);
+  }
+ 
+  .script-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+ 
+  .script-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+ 
+  .meta-item {
+    padding: 8px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border-left: 2px solid var(--accent3);
+  }
+ 
+  .meta-label {
+    font-size: 9px;
+    font-family: var(--mono);
     color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+ 
+  .meta-value {
     font-size: 11px;
+    color: var(--text);
+  }
+ 
+  .script-section {
+    margin-bottom: 12px;
+  }
+ 
+  .section-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 6px;
+    letter-spacing: 0.8px;
+  }
+ 
+  .section-text {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    border-left: 3px solid var(--accent2);
+  }
+ 
+  .section-text.hook { border-left-color: var(--accent4); }
+  .section-text.body { border-left-color: var(--accent3); }
+  .section-text.cta { border-left-color: var(--accent); }
+ 
+  .hashtags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+ 
+  .hashtag {
+    font-size: 11px;
+    color: var(--accent3);
+    font-family: var(--mono);
+  }
+ 
+  /* Empty State */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+ 
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+ 
+  /* Actions */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+ 
+  .btn-action {
+    padding: 11px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
     font-family: var(--font);
     cursor: pointer;
     transition: all 0.15s;
+    background: var(--surface2);
+    color: var(--text-mid);
   }
-  .filter-btn.active { background: var(--accent3); border-color: var(--accent3); color: #fff; }
-
-  .empty {
+ 
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); }
+ 
+  .btn-action.primary {
+    background: var(--accent);
+    color: #0a0c10;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+ 
+  .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
+  /* Footer */
+  footer {
+    margin-top: 60px;
+    padding: 40px 0 20px;
+    border-top: 1px solid var(--border);
     text-align: center;
-    padding: 40px 20px;
+    font-size: 11px;
     color: var(--text-dim);
-    font-size: 13px;
   }
-
-  @media (max-width: 768px) {
-    header { flex-direction: column; gap: 15px; align-items: flex-start; }
-    .nav-tabs { width: 100%; }
+ 
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .script-meta { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-
+ 
   <header>
-    <div class="logo">
-      <div class="logo-mark">📊</div>
-      <div>
-        <h1>Tidlor Content Radar</h1>
-        <p>3-page system with real API data</p>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="3" fill="#0a0c10"/>
+            <circle cx="12" cy="12" r="6" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <circle cx="12" cy="12" r="9.5" stroke="#0a0c10" stroke-width="1.5" stroke-dasharray="2 3"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>Tidlor Content Radar v3</h1>
+          <p>🚀 Auto-fetch Real-time Data (SerpAPI · Google News · Gemini)</p>
+        </div>
       </div>
-    </div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchPage('search')">📊 Search</button>
-      <button class="nav-tab" onclick="switchPage('ideas')">💡 Ideas</button>
-      <button class="nav-tab" onclick="switchPage('dashboard')">📈 Dashboard</button>
+      <div class="status-dot">
+        <div class="dot"></div>
+        <span id="status">ready</span>
+      </div>
     </div>
   </header>
-
-  <!-- ================== PAGE 1: SEARCH ================== -->
-  <div id="search" class="page active">
-    <div class="panel">
-      <div class="panel-title">⚡ Keyword Analysis</div>
-      <div class="input-group">
-        <input type="text" id="keyword" placeholder="พิมพ์ keyword..." value="สินเชื่อทะเบียนรถ">
-        <select id="audience">
-          <option value="gen_z">Gen Z</option>
-          <option value="gen_y">Gen Y</option>
-        </select>
-        <button class="btn-primary" id="runBtn" onclick="runAnalysis()">▶ Search</button>
+ 
+  <div class="search-panel">
+    <div class="panel-label">⚡ Real-time Auto-fetch Analysis</div>
+ 
+    <div class="search-row">
+      <div style="flex: 1; position: relative;">
+        <input
+          id="keyword"
+          class="keyword-input"
+          type="text"
+          placeholder="Type keyword (e.g., สินเชื่อทะเบียนรถ)..."
+          value="สินเชื่อทะเบียนรถ"
+          oninput="onKeywordChange()"
+        />
+        <div id="autocomplete-list" class="autocomplete-list"></div>
       </div>
-      <div class="status" id="statusSearch"></div>
+      <button class="btn-run" id="btn-run" onclick="runAnalysis()">▶ Analyze</button>
     </div>
-
-    <div id="searchResults" style="display: none;">
-      <div class="cards-grid" id="searchGrid"></div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" onclick="switchPage('ideas')">💡 View Ideas</button>
-        <button class="btn-secondary" onclick="exportWeekly()">📥 Export to Excel</button>
+ 
+    <div class="config-section">
+      <div class="panel-label">🔑 Apps Script URL</div>
+      <div class="config-row">
+        <input id="apps-script-url" class="config-input" type="text" placeholder="https://script.google.com/macros/s/AKfycbz28i93SHrz_uhGqQlN5E0GzrdYqNZrzuGQ4n9U6ygjo6aG4px4nJIXNz3kZN7qgNVk/exec"/>
+        <button class="btn-config" onclick="saveAppScriptUrl()">💾 Save</button>
       </div>
     </div>
-
-    <div id="searchEmpty" class="empty">📍 ค้นหา keyword เพื่อเริ่มต้น</div>
   </div>
-
-  <!-- ================== PAGE 2: IDEAS ================== -->
-  <div id="ideas" class="page">
-    <div class="panel">
-      <div class="panel-title">🎯 Content Ideas</div>
-      <div class="filter-row">
-        <button class="filter-btn active" onclick="filterIdeas('all', this)">All</button>
-        <button class="filter-btn" onclick="filterIdeas('education', this)">📚 Education</button>
-        <button class="filter-btn" onclick="filterIdeas('product', this)">🎯 Product</button>
+ 
+  <div class="error-box" id="error-box"></div>
+ 
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">กำลังดึงข้อมูลแบบ real-time...</div>
+    <div class="loading-step" id="loading-step">เตรียมข้อมูล...</div>
+  </div>
+ 
+  <div id="empty-state" class="empty">
+    <div class="empty-icon">📡</div>
+    <p style="font-size: 14px; line-height: 1.6;">
+      1. ใส่ Apps Script URL<br>
+      2. พิมพ์ keyword<br>
+      3. กด "Analyze" หรือ Enter<br>
+      เพื่อดึงข้อมูล real-time จาก SerpAPI, Google News, Gemini
+    </p>
+  </div>
+ 
+  <div id="research-panel" class="panel">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('data')">📊 Data</button>
+      <button class="tab-btn" onclick="switchTab('ideas')">💡 Ideas</button>
+      <button class="tab-btn" onclick="switchTab('scripts')">🎬 Scripts</button>
+    </div>
+ 
+    <div id="data-tab" class="panel active">
+      <div id="data-cards"></div>
+      <div class="action-row">
+        <button class="btn-action primary" onclick="switchTab('ideas')">▶ Ideas</button>
+        <button class="btn-action" onclick="reset()">🔄 Clear</button>
       </div>
     </div>
-
-    <div id="ideasResults" style="display: none;">
-      <div id="ideasList"></div>
-    </div>
-
-    <div id="ideasEmpty" class="empty">ค้นหา keyword ในหน้า Search ก่อน</div>
-  </div>
-
-  <!-- ================== PAGE 3: DASHBOARD ================== -->
-  <div id="dashboard" class="page">
-    <div class="panel">
-      <div class="panel-title">📈 Weekly Summary</div>
-    </div>
-
-    <div id="dashboardResults" style="display: none;">
-      <div class="dashboard-grid" id="dashboardGrid"></div>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn-primary" onclick="saveWeekly()">💾 Save Weekly Data</button>
-        <button class="btn-secondary" onclick="exportWeekly()">📥 Export Excel</button>
+ 
+    <div id="ideas-tab" class="panel">
+      <div id="ideas-content"></div>
+      <div class="action-row">
+        <button class="btn-action primary" onclick="switchTab('scripts')">▶ Scripts</button>
+        <button class="btn-action" onclick="switchTab('data')">← Back</button>
       </div>
     </div>
-
-    <div id="dashboardEmpty" class="empty">ค้นหา keyword ในหน้า Search ก่อน</div>
+ 
+    <div id="scripts-tab" class="panel">
+      <div id="scripts-content"></div>
+      <div class="action-row">
+        <button class="btn-action primary" onclick="copyAllScripts()">📋 Copy All</button>
+        <button class="btn-action" onclick="switchTab('ideas')">← Back</button>
+      </div>
+    </div>
   </div>
-
+ 
+  <footer>
+    <p>Tidlor Content Radar v3 | Auto-fetch Real-time Data | 
+    <a href="https://github.com" target="_blank">GitHub</a></p>
+  </footer>
+ 
 </div>
-
-<!-- ================== SCRIPTS ================== -->
+ 
 <script>
-  // ==================== HARDCODED APPS SCRIPT URL ====================
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXoH12kT82js5CrwLf5qOV4Za5RyrFijTPY5Al7yurSlES_r5RticMhBBRjNoyna9s/exec";
+// ============================================================================
+// STATE & CONFIG
+// ============================================================================
 
-  // Main keywords
-  const MAIN_KEYWORDS = [
-    "สินเชื่อทะเบียนรถ",
-    "สินเชื่อที่ดิน",
-    "กู้เงิน",
-    "บัตรติดล้อ",
-    "รวมหนี้",
-    "ออมเงิน"
-  ];
+let currentKeyword = "";
+let currentData = null;
+let appsScriptUrl = "";
+let analysisTimeout = null;
 
-  let allKeywordsData = {};
-  let currentFilter = "all";
+const suggestedKeywords = [
+  "สินเชื่อทะเบียนรถ",
+  "สินเชื่อโฉนดที่ดิน",
+  "กู้เงินด่วน",
+  "บัตรติดล้อ",
+  "รวมหนี้",
+  "ออมเงิน"
+];
 
-  // Switch pages
-  function switchPage(pageName) {
-    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-    document.getElementById(pageName).classList.add("active");
-    
-    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-    event.target.classList.add("active");
-
-    if (pageName === "dashboard") displayDashboard();
+// Load config on startup
+window.addEventListener("load", () => {
+  appsScriptUrl = localStorage.getItem("apps_script_url") || "";
+  if (appsScriptUrl) {
+    document.getElementById("apps-script-url").value = appsScriptUrl;
   }
+});
 
-  // Run analysis
-  function runAnalysis() {
-    const keyword = document.getElementById('keyword').value.trim();
-    const audience = document.getElementById('audience').value;
-    const btn = document.getElementById('runBtn');
+// ============================================================================
+// AUTOCOMPLETE
+// ============================================================================
 
-    if (!keyword) {
-      showStatus('⚠️ Please enter a keyword', 'error', 'statusSearch');
-      return;
+function onKeywordChange() {
+  const keyword = document.getElementById("keyword").value;
+  
+  // Clear previous timeout
+  clearTimeout(analysisTimeout);
+  
+  // Autocomplete
+  updateAutocomplete(keyword);
+  
+  // Auto-run after 1 second of inactivity
+  analysisTimeout = setTimeout(() => {
+    if (keyword.trim().length > 0) {
+      runAnalysis();
     }
+  }, 1000);
+}
 
-    btn.disabled = true;
-    showStatus('🔍 Fetching from SerpAPI + Gemini...', 'loading', 'statusSearch');
-
-    callAppsScript('full', keyword, audience, function(response) {
-      btn.disabled = false;
-      if (response.success) {
-        allKeywordsData[keyword] = response.data;
-        displaySearchResults(keyword);
-        showStatus('✓ Analysis complete', 'success', 'statusSearch');
-      } else {
-        showStatus('✗ Error: ' + response.error, 'error', 'statusSearch');
-      }
-    });
+function updateAutocomplete(input) {
+  const list = document.getElementById("autocomplete-list");
+  
+  if (!input || input.length < 2) {
+    list.classList.remove("show");
+    return;
   }
-
-  // Display search results
-  function displaySearchResults(keyword) {
-    const data = allKeywordsData[keyword];
-    const research = data.research || {};
-    const content = data.content || {};
-
-    let html = '';
-
-    // PAA Card
-    if (research.peopleAlsoAsk && research.peopleAlsoAsk.length > 0) {
-      html += createCard(
-        '💬 PAA Questions (' + research.peopleAlsoAsk.length + ')',
-        research.peopleAlsoAsk.slice(0, 5).map(q => '❓ ' + q).join('\n')
-      );
-    }
-
-    // SERP Card
-    if (research.topResults && research.topResults.length > 0) {
-      html += createCard(
-        '📈 Top SERP (' + research.topResults.length + ')',
-        research.topResults.slice(0, 3).map((r, i) => '[' + (i+1) + '] ' + r.title).join('\n')
-      );
-    }
-
-    // Pain Points Card
-    if (content.pain_points && content.pain_points.length > 0) {
-      html += createCard(
-        '⚡ Pain Points (' + content.pain_points.length + ')',
-        content.pain_points.slice(0, 5).map(p => '• ' + p).join('\n')
-      );
-    }
-
-    // Intent Card
-    html += createCard(
-      '🎯 Search Intent',
-      'Intent: ' + (content.search_intent || 'N/A') + '\n\nAngle: ' + (content.content_angle || 'N/A')
-    );
-
-    // AEO Card
-    if (content.aeo_answers && content.aeo_answers.length > 0) {
-      const aeoText = content.aeo_answers.slice(0, 2).map(a => 
-        'Q: ' + a.question + '\n\nA: ' + a.answer.substring(0, 50) + '...'
-      ).join('\n\n');
-      html += createCard('🤖 AEO Answers', aeoText);
-    }
-
-    // News Card
-    if (research.news && research.news.length > 0) {
-      html += createCard(
-        '📰 News (' + research.news.length + ')',
-        research.news.slice(0, 3).map(n => n.title).join('\n\n')
-      );
-    }
-
-    document.getElementById('searchGrid').innerHTML = html;
-    document.getElementById('searchResults').style.display = 'block';
-    document.getElementById('searchEmpty').style.display = 'none';
+  
+  const filtered = suggestedKeywords.filter(k => k.includes(input));
+  if (filtered.length === 0) {
+    list.classList.remove("show");
+    return;
   }
+  
+  list.innerHTML = filtered.map(k => 
+    `<div class="autocomplete-item" onclick="selectKeyword('${k}')">${k}</div>`
+  ).join("");
+  list.classList.add("show");
+}
 
-  // Display ideas
-  function displayIdeas(keyword) {
-    const data = allKeywordsData[keyword];
-    if (!data) return;
+function selectKeyword(kw) {
+  document.getElementById("keyword").value = kw;
+  document.getElementById("autocomplete-list").classList.remove("show");
+  runAnalysis();
+}
 
-    let ideas = data.ideas || [];
-    if (currentFilter !== "all") {
-      ideas = ideas.filter(i => i.type === currentFilter);
-    }
+// ============================================================================
+// CONFIG
+// ============================================================================
 
-    let html = '';
-    ideas.forEach(idea => {
-      html += `
-        <div class="idea-card">
-          <div class="idea-type">${idea.type}</div>
-          <div class="idea-title">${idea.title}</div>
-          <div class="idea-hooks">
-            <strong>Gen Z:</strong> ${idea.gen_z}<br>
-            <strong>Gen Y:</strong> ${idea.gen_y}
-          </div>
-        </div>
-      `;
-    });
+function saveAppScriptUrl() {
+  const url = document.getElementById("apps-script-url").value.trim();
+  appsScriptUrl = url;
+  localStorage.setItem("apps_script_url", url);
+  showError(url ? "✓ URL saved!" : "⚠️ URL is empty");
+}
 
-    document.getElementById('ideasList').innerHTML = html;
-    document.getElementById('ideasResults').style.display = 'block';
-    document.getElementById('ideasEmpty').style.display = 'none';
+// ============================================================================
+// MAIN ANALYSIS - AUTO-FETCH from Apps Script
+// ============================================================================
+
+function runAnalysis() {
+  const keyword = document.getElementById("keyword").value.trim();
+  
+  if (!keyword) {
+    showError("Please enter a keyword");
+    return;
   }
-
-  // Filter ideas
-  function filterIdeas(type, btn) {
-    currentFilter = type;
-    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    
-    const keyword = document.getElementById('keyword').value;
-    if (allKeywordsData[keyword]) {
-      displayIdeas(keyword);
-    }
+  
+  if (!appsScriptUrl) {
+    showError("Please paste Apps Script URL first");
+    return;
   }
+  
+  currentKeyword = keyword;
+  showLoading(true);
+  setStatus("analyzing...");
+  
+  // Call Apps Script API via JSONP
+  callAppsScript("full");
+}
 
-  // Display dashboard
-  function displayDashboard() {
-    let html = '';
-
-    MAIN_KEYWORDS.forEach(keyword => {
-      const data = allKeywordsData[keyword];
-      html += `
-        <div class="dashboard-card">
-          <h3>${keyword}</h3>
-          <div class="dashboard-content">
-            ${data ? `
-              <div class="keyword-badge">✓ วิเคราะห์</div>
-              <p>📌 PAA: ${data.research?.peopleAlsoAsk?.length || 0}</p>
-              <p>🤖 AEO: ${data.content?.aeo_answers?.length || 0}</p>
-              <p>📈 SERP: ${data.research?.topResults?.length || 0}</p>
-              <p>💡 Ideas: ${data.ideas?.length || 0}</p>
-            ` : `
-              <div class="keyword-badge" style="background: var(--surface2); color: var(--text-dim);">⊘ ยังไม่วิเคราะห์</div>
-            `}
-          </div>
-        </div>
-      `;
-    });
-
-    document.getElementById('dashboardGrid').innerHTML = html;
-    document.getElementById('dashboardResults').style.display = 'block';
-    document.getElementById('dashboardEmpty').style.display = 'none';
-  }
-
-  // Call Apps Script
-  function callAppsScript(action, keyword, audience, callback) {
-    const callbackName = 'callback_' + Date.now();
-    
-    window[callbackName] = function(response) {
+function callAppsScript(action) {
+  const keyword = currentKeyword;
+  const callbackName = "appsScriptCallback_" + Date.now();
+  
+  // Create callback
+  window[callbackName] = function(response) {
+    handleAppsScriptResponse(response);
+    // Cleanup
+    delete window[callbackName];
+    const script = document.querySelector(`script[data-callback="${callbackName}"]`);
+    if (script) script.remove();
+  };
+  
+  // Build URL
+  const url = appsScriptUrl + 
+              "?action=" + action + 
+              "&keyword=" + encodeURIComponent(keyword) + 
+              "&callback=" + callbackName;
+  
+  Logger.log("Calling: " + url);
+  
+  // Create and inject script
+  const script = document.createElement("script");
+  script.src = url;
+  script.setAttribute("data-callback", callbackName);
+  script.onerror = () => {
+    showLoading(false);
+    showError("❌ Apps Script error - check URL and network");
+    delete window[callbackName];
+  };
+  
+  document.head.appendChild(script);
+  
+  // Timeout after 15 seconds
+  setTimeout(() => {
+    if (window[callbackName]) {
+      showLoading(false);
+      showError("❌ Request timeout - check Apps Script deployment");
       delete window[callbackName];
-      try { document.body.removeChild(script); } catch(e) {}
-      clearTimeout(timeout);
-      callback(response);
-    };
+    }
+  }, 15000);
+}
 
-    const params = `?action=${action}&keyword=${encodeURIComponent(keyword)}&audience=${audience}&callback=${callbackName}`;
-    const script = document.createElement('script');
-    script.src = APPS_SCRIPT_URL + params;
-    script.onerror = function() {
-      showStatus('✗ Connection failed', 'error', 'statusSearch');
-      delete window[callbackName];
-      try { document.body.removeChild(script); } catch(e) {}
-      clearTimeout(timeout);
-    };
-
-    const timeout = setTimeout(function() {
-      if (window[callbackName]) {
-        showStatus('✗ Request timeout', 'error', 'statusSearch');
-        delete window[callbackName];
-        try { document.body.removeChild(script); } catch(e) {}
-      }
-    }, 30000);
-
-    document.body.appendChild(script);
+function handleAppsScriptResponse(response) {
+  showLoading(false);
+  
+  if (!response || !response.success) {
+    showError("❌ " + (response?.error || "Unknown error"));
+    return;
   }
+  
+  currentData = response.data;
+  setStatus("ready");
+  renderResearchData();
+  showPanel("research-panel");
+}
 
-  // Create card
-  function createCard(title, content) {
-    return `
-      <div class="card">
-        <div class="card-title">${title}</div>
-        <div class="card-content">${content}</div>
+// ============================================================================
+// RENDER RESEARCH DATA
+// ============================================================================
+
+function renderResearchData() {
+  const { research } = currentData;
+  
+  const cardsHTML = `
+    ${renderCard("paa", "💬 People Also Ask", research.paa || [])}
+    ${renderCard("related", "🔗 Related Searches", (research.relatedSearches || []).map(r => typeof r === 'string' ? r : r.text))}
+    ${renderCard("serp", "📈 Google Top Rank", (research.topResults || []).map(r => typeof r === 'string' ? r : r.title))}
+    ${renderCard("pain", "⚠️ Pain Points", research.painPoints || [])}
+    ${renderCard("aeo", "🤖 AEO Answers", (research.aeoAnswers || []).map(a => typeof a === 'string' ? a : (a.question + " → " + a.answer)))}
+    ${renderCard("news", "📰 Latest News", (research.news || []).map(n => typeof n === 'string' ? n : n.title))}
+  `;
+  
+  document.getElementById("data-cards").innerHTML = cardsHTML;
+}
+
+function renderCard(type, title, items) {
+  const safeItems = Array.isArray(items) ? items : [items];
+  
+  let itemsHTML = "";
+  safeItems.slice(0, 5).forEach(item => {
+    let text = "";
+    let volume = "";
+    
+    if (typeof item === 'object') {
+      text = item.title || item.question || item.text || JSON.stringify(item);
+      // Add volume if exists
+      if (item.volume && type === 'related') {
+        const volFormatted = item.volume > 1000 
+          ? (item.volume / 1000).toFixed(1) + "K"
+          : item.volume;
+        volume = ` <span style="color: var(--accent3); font-size: 10px; margin-left: 6px;">📊 ${volFormatted}</span>`;
+      }
+    } else {
+      text = item;
+    }
+    
+    itemsHTML += `<div class="card-item"><div class="card-item-text">• ${text}${volume}</div></div>`;
+  });
+  
+  return `
+    <div class="card ${type}">
+      <div class="card-title">${title}</div>
+      <div class="card-content">${itemsHTML}</div>
+    </div>
+  `;
+}
+
+// ============================================================================
+// IDEAS & SCRIPTS
+// ============================================================================
+
+function switchTab(tab) {
+  document.getElementById("data-tab").classList.remove("active");
+  document.getElementById("ideas-tab").classList.remove("active");
+  document.getElementById("scripts-tab").classList.remove("active");
+  
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  
+  if (tab === "data") {
+    document.getElementById("data-tab").classList.add("active");
+    document.querySelectorAll(".tab-btn")[0].classList.add("active");
+  } else if (tab === "ideas") {
+    document.getElementById("ideas-tab").classList.add("active");
+    document.querySelectorAll(".tab-btn")[1].classList.add("active");
+    if (!currentData?.ideas) renderIdeas();
+  } else if (tab === "scripts") {
+    document.getElementById("scripts-tab").classList.add("active");
+    document.querySelectorAll(".tab-btn")[2].classList.add("active");
+    if (!currentData?.scripts) renderScripts();
+  }
+}
+
+function renderIdeas() {
+  const ideas = currentData?.ideas || [];
+  
+  const ideasHTML = ideas.map((idea, idx) => `
+    <div style="padding: 14px; background: var(--surface2); border-radius: 10px; margin-bottom: 12px; border-left: 3px solid ${idea.type === 'education' ? 'var(--edu)' : 'var(--commercial)'};">
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <span style="font-size: 10px; padding: 4px 8px; border-radius: 6px; background: ${idea.type === 'education' ? 'rgba(79,195,247,0.2)' : 'rgba(255,179,0,0.2)'}; color: ${idea.type === 'education' ? 'var(--edu)' : 'var(--commercial)'}; font-weight: 600;">
+          ${idea.type === 'education' ? '📚 FIN ED' : '🎯 COMMERCIAL'}
+        </span>
       </div>
-    `;
-  }
+      <div style="font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">${idea.topic}</div>
+      <div style="font-size: 12px; color: var(--text-mid); margin-bottom: 4px;">🔥 ${idea.hook}</div>
+      <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">💡 ${idea.reason}</div>
+    </div>
+  `).join("");
+  
+  document.getElementById("ideas-content").innerHTML = ideasHTML;
+}
 
-  // Save weekly
-  function saveWeekly() {
-    const keyword = document.getElementById('keyword').value;
-    if (!keyword) {
-      showStatus('⚠️ Please search keyword first', 'error', 'statusSearch');
-      return;
-    }
+function renderScripts() {
+  const scripts = currentData?.scripts || [];
+  
+  const scriptsHTML = scripts.map((script, idx) => `
+    <div class="script-card ${script.type === 'commercial' ? 'commercial' : ''}">
+      <div class="script-header">
+        <span class="script-type">${script.type === 'education' ? '📚 FIN ED' : '🎯 COMMERCIAL'}</span>
+        <div class="script-title">${script.topic}</div>
+      </div>
+      
+      <div class="script-meta">
+        <div class="meta-item">
+          <div class="meta-label">👥 Gen Y</div>
+          <div class="meta-value">${script.genYInsight}</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">👤 Gen Z</div>
+          <div class="meta-value">${script.genZInsight}</div>
+        </div>
+      </div>
+      
+      <div class="script-section">
+        <div class="section-label">🔥 Hook</div>
+        <div class="section-text hook">"${script.hook}"</div>
+      </div>
+      
+      <div class="script-section">
+        <div class="section-label">📢 Script</div>
+        <div class="section-text body">${script.script}</div>
+      </div>
+      
+      <div class="script-section">
+        <div class="section-label">✅ CTA</div>
+        <div class="section-text cta">${script.cta}</div>
+      </div>
+      
+      <div class="script-section">
+        <div class="section-label">🏷️ Keywords & Hashtags</div>
+        <div class="hashtags">
+          ${(script.seoKeywords || []).map(k => `<span class="hashtag">#${k}</span>`).join("")}
+          ${(script.hashtags || []).map(h => `<span class="hashtag">${h}</span>`).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("");
+  
+  document.getElementById("scripts-content").innerHTML = scriptsHTML;
+}
 
-    callAppsScript('save', keyword, '', function(response) {
-      if (response.success) {
-        showStatus('✓ Saved to Google Sheet', 'success', 'statusSearch');
-      } else {
-        showStatus('✗ Error: ' + response.error, 'error', 'statusSearch');
-      }
-    });
-  }
+function copyAllScripts() {
+  const scripts = currentData?.scripts || [];
+  const text = scripts.map((s, i) => {
+    return `[${i+1}] ${s.topic}
+🔥 Hook: ${s.hook}
+📢 Script: ${s.script}
+Keywords: ${(s.seoKeywords || []).join(", ")}
+Hashtags: ${(s.hashtags || []).join(" ")}`;
+  }).join("\n\n---\n\n");
+  
+  navigator.clipboard.writeText(text).then(() => {
+    showError("✓ Copied to clipboard!");
+  });
+}
 
-  // Export to Excel
-  function exportWeekly() {
-    const today = new Date();
-    const rows = [
-      ['TIDLOR CONTENT RADAR - WEEKLY SUMMARY'],
-      ['Week', today.toLocaleDateString('th-TH')],
-      [],
-      ['Keyword', 'PAA', 'SERP', 'Pain Points', 'Ideas', 'Status']
-    ];
+// ============================================================================
+// UTILITIES
+// ============================================================================
 
-    MAIN_KEYWORDS.forEach(keyword => {
-      const data = allKeywordsData[keyword];
-      rows.push([
-        keyword,
-        data?.research?.peopleAlsoAsk?.length || 0,
-        data?.research?.topResults?.length || 0,
-        data?.content?.pain_points?.length || 0,
-        data?.ideas?.length || 0,
-        data ? '✓' : '✗'
-      ]);
-    });
+function showPanel(id) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("empty-state").style.display = "none";
+}
 
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Weekly Summary");
-    XLSX.writeFile(wb, `tidlor-weekly-${today.toISOString().split('T')[0]}.xlsx`);
-    showStatus('✓ Exported to Excel', 'success', 'statusSearch');
-  }
+function showLoading(show) {
+  document.getElementById("loading").classList.toggle("show", show);
+  document.getElementById("btn-run").disabled = show;
+}
 
-  function showStatus(msg, type, elementId) {
-    const el = document.getElementById(elementId);
-    el.textContent = msg;
-    el.className = 'status show ' + type;
-  }
+function showError(msg) {
+  const box = document.getElementById("error-box");
+  box.textContent = msg;
+  box.classList.toggle("show", msg.length > 0);
+  setTimeout(() => box.classList.remove("show"), 5000);
+}
+
+function setStatus(text) {
+  document.getElementById("status").textContent = text;
+}
+
+function reset() {
+  currentData = null;
+  document.getElementById("research-panel").classList.remove("active");
+  document.getElementById("empty-state").style.display = "block";
+  document.getElementById("keyword").value = "";
+  setStatus("ready");
+}
 </script>
 </body>
 </html>
