@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tidlor Content Radar</title>
+<title>Tidlor Content Radar - 3 Pages</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
 <style>
   :root {
     --bg: #0a0c10;
@@ -31,45 +32,56 @@
     padding: 20px;
   }
 
-  .wrap { max-width: 1000px; margin: 0 auto; }
+  .wrap { max-width: 1200px; margin: 0 auto; }
 
   header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 20px 0;
     border-bottom: 1px solid var(--border);
     margin-bottom: 30px;
   }
 
-  h1 { font-size: 24px; margin-bottom: 5px; }
-  .subtitle { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: rgba(0, 229, 160, 0.1);
-    border: 1px solid rgba(0, 229, 160, 0.3);
-    border-radius: 20px;
-    margin-top: 10px;
-    font-size: 11px;
-    color: var(--accent);
-    font-family: var(--mono);
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-mark {
+    width: 40px; height: 40px;
     background: var(--accent);
-    animation: pulse 2s infinite;
+    border-radius: 8px;
+    display: grid; place-items: center;
+  }
+  .logo h1 { font-size: 18px; font-weight: 700; }
+  .logo p { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+  .nav-tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-mid);
+    font-size: 12px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s;
   }
 
-  .config-section {
+  .nav-tab:hover { border-color: var(--accent3); color: var(--accent3); }
+  .nav-tab.active {
+    background: var(--accent3);
+    border-color: var(--accent3);
+    color: #fff;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .panel {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -77,19 +89,19 @@
     margin-bottom: 20px;
   }
 
-  .form-group { margin-bottom: 15px; }
-  label {
-    display: block;
+  .panel-title {
     font-size: 11px;
     color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 6px;
+    margin-bottom: 12px;
     font-weight: 600;
   }
 
+  .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
+
   input, select {
-    width: 100%;
+    flex: 1;
     padding: 10px;
     background: var(--surface2);
     border: 1px solid var(--border);
@@ -133,7 +145,7 @@
   .status {
     padding: 12px;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-top: 12px;
     font-size: 11px;
     display: none;
     font-family: var(--mono);
@@ -146,8 +158,8 @@
 
   .cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
     margin-bottom: 20px;
   }
 
@@ -179,70 +191,164 @@
     font-size: 12px;
     color: var(--text-mid);
     line-height: 1.5;
+    white-space: pre-line;
   }
 
-  .info-box {
+  .idea-card {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 12px;
-    font-size: 11px;
-    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
   }
 
-  .info-box strong { color: var(--accent); }
+  .idea-card:hover { border-color: var(--accent); }
+
+  .idea-type {
+    display: inline-block;
+    font-size: 9px;
+    color: var(--accent3);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+  }
+
+  .idea-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .idea-hooks { font-size: 11px; color: var(--text-dim); }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 15px;
+  }
+
+  .dashboard-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .dashboard-content { font-size: 11px; color: var(--text-mid); line-height: 1.6; }
+
+  .keyword-badge {
+    display: inline-block;
+    background: var(--accent3);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    margin-bottom: 6px;
+  }
+
+  .filter-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--accent3); border-color: var(--accent3); color: #fff; }
+
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  @media (max-width: 768px) {
+    header { flex-direction: column; gap: 15px; align-items: flex-start; }
+    .nav-tabs { width: 100%; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
 
   <header>
-    <h1>⚙️ Tidlor Content Radar</h1>
-    <p class="subtitle">🔗 Auto-connected to Google Apps Script</p>
-    <div class="status-badge">
-      <div class="status-dot"></div>
-      <span>Connected</span>
+    <div class="logo">
+      <div class="logo-mark">📊</div>
+      <div>
+        <h1>Tidlor Content Radar</h1>
+        <p>3-page system with real API data</p>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchPage('search')">📊 Search</button>
+      <button class="nav-tab" onclick="switchPage('ideas')">💡 Ideas</button>
+      <button class="nav-tab" onclick="switchPage('dashboard')">📈 Dashboard</button>
     </div>
   </header>
 
-  <!-- ================== SEARCH SECTION ================== -->
-  <div class="config-section">
-    <h2 style="font-size: 16px; margin-bottom: 15px;">🔍 Search & Analyze</h2>
-
-    <div class="form-group">
-      <label>Keyword</label>
-      <input 
-        type="text" 
-        id="keyword" 
-        placeholder="เช่น สินเชื่อทะเบียนรถ"
-        value="สินเชื่อทะเบียนรถ"
-      >
+  <!-- ================== PAGE 1: SEARCH ================== -->
+  <div id="search" class="page active">
+    <div class="panel">
+      <div class="panel-title">⚡ Keyword Analysis</div>
+      <div class="input-group">
+        <input type="text" id="keyword" placeholder="พิมพ์ keyword..." value="สินเชื่อทะเบียนรถ">
+        <select id="audience">
+          <option value="gen_z">Gen Z</option>
+          <option value="gen_y">Gen Y</option>
+        </select>
+        <button class="btn-primary" id="runBtn" onclick="runAnalysis()">▶ Search</button>
+      </div>
+      <div class="status" id="statusSearch"></div>
     </div>
 
-    <div class="form-group">
-      <label>Audience</label>
-      <select id="audience">
-        <option value="gen_z">Gen Z</option>
-        <option value="gen_y">Gen Y</option>
-      </select>
+    <div id="searchResults" style="display: none;">
+      <div class="cards-grid" id="searchGrid"></div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" onclick="switchPage('ideas')">💡 View Ideas</button>
+        <button class="btn-secondary" onclick="exportWeekly()">📥 Export to Excel</button>
+      </div>
     </div>
 
-    <div style="display: flex; gap: 10px;">
-      <button class="btn-primary" id="runBtn" onclick="runAnalysis()">
-        ▶ Run Analysis
-      </button>
-      <button class="btn-secondary" onclick="saveToSheet()">
-        💾 Save to Sheet
-      </button>
-    </div>
-
-    <div class="status" id="statusAnalysis"></div>
+    <div id="searchEmpty" class="empty">📍 ค้นหา keyword เพื่อเริ่มต้น</div>
   </div>
 
-  <!-- ================== RESULTS SECTION ================== -->
-  <div id="resultsSection" style="display: none;">
-    <h2 style="font-size: 16px; margin-bottom: 15px;">📊 Results</h2>
-    <div class="cards-grid" id="resultsGrid"></div>
+  <!-- ================== PAGE 2: IDEAS ================== -->
+  <div id="ideas" class="page">
+    <div class="panel">
+      <div class="panel-title">🎯 Content Ideas</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterIdeas('all', this)">All</button>
+        <button class="filter-btn" onclick="filterIdeas('education', this)">📚 Education</button>
+        <button class="filter-btn" onclick="filterIdeas('product', this)">🎯 Product</button>
+      </div>
+    </div>
+
+    <div id="ideasResults" style="display: none;">
+      <div id="ideasList"></div>
+    </div>
+
+    <div id="ideasEmpty" class="empty">ค้นหา keyword ในหน้า Search ก่อน</div>
+  </div>
+
+  <!-- ================== PAGE 3: DASHBOARD ================== -->
+  <div id="dashboard" class="page">
+    <div class="panel">
+      <div class="panel-title">📈 Weekly Summary</div>
+    </div>
+
+    <div id="dashboardResults" style="display: none;">
+      <div class="dashboard-grid" id="dashboardGrid"></div>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" onclick="saveWeekly()">💾 Save Weekly Data</button>
+        <button class="btn-secondary" onclick="exportWeekly()">📥 Export Excel</button>
+      </div>
+    </div>
+
+    <div id="dashboardEmpty" class="empty">ค้นหา keyword ในหน้า Search ก่อน</div>
   </div>
 
 </div>
@@ -250,13 +356,31 @@
 <!-- ================== SCRIPTS ================== -->
 <script>
   // ==================== HARDCODED APPS SCRIPT URL ====================
-  // ⚠️ REPLACE THIS WITH YOUR APPS SCRIPT WEB APP URL
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyV18zM0NNa4hls8gOFaRSgJIQSFZY341FeWZJ75qY1BaCYJz6Nk7-E8RnQeprOvLLK/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXoH12kT82js5CrwLf5qOV4Za5RyrFijTPY5Al7yurSlES_r5RticMhBBRjNoyna9s/exec";
 
-  // Auto-connect on startup
-  window.onload = function() {
-    console.log("System connected to: " + APPS_SCRIPT_URL);
-  };
+  // Main keywords
+  const MAIN_KEYWORDS = [
+    "สินเชื่อทะเบียนรถ",
+    "สินเชื่อที่ดิน",
+    "กู้เงิน",
+    "บัตรติดล้อ",
+    "รวมหนี้",
+    "ออมเงิน"
+  ];
+
+  let allKeywordsData = {};
+  let currentFilter = "all";
+
+  // Switch pages
+  function switchPage(pageName) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(pageName).classList.add("active");
+    
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    event.target.classList.add("active");
+
+    if (pageName === "dashboard") displayDashboard();
+  }
 
   // Run analysis
   function runAnalysis() {
@@ -265,45 +389,155 @@
     const btn = document.getElementById('runBtn');
 
     if (!keyword) {
-      showStatus('⚠️ Please enter a keyword', 'error', 'statusAnalysis');
+      showStatus('⚠️ Please enter a keyword', 'error', 'statusSearch');
       return;
     }
 
     btn.disabled = true;
-    showStatus('🔍 Analyzing keyword...', 'loading', 'statusAnalysis');
+    showStatus('🔍 Fetching from SerpAPI + Gemini...', 'loading', 'statusSearch');
 
     callAppsScript('full', keyword, audience, function(response) {
       btn.disabled = false;
       if (response.success) {
-        displayResults(response.data);
-        showStatus('✓ Analysis complete', 'success', 'statusAnalysis');
+        allKeywordsData[keyword] = response.data;
+        displaySearchResults(keyword);
+        showStatus('✓ Analysis complete', 'success', 'statusSearch');
       } else {
-        showStatus('✗ Error: ' + (response.error || 'Unknown error'), 'error', 'statusAnalysis');
+        showStatus('✗ Error: ' + response.error, 'error', 'statusSearch');
       }
     });
   }
 
-  // Save to sheet
-  function saveToSheet() {
-    const keyword = document.getElementById('keyword').value.trim();
+  // Display search results
+  function displaySearchResults(keyword) {
+    const data = allKeywordsData[keyword];
+    const research = data.research || {};
+    const content = data.content || {};
 
-    if (!keyword) {
-      showStatus('⚠️ Please enter a keyword', 'error', 'statusAnalysis');
-      return;
+    let html = '';
+
+    // PAA Card
+    if (research.peopleAlsoAsk && research.peopleAlsoAsk.length > 0) {
+      html += createCard(
+        '💬 PAA Questions (' + research.peopleAlsoAsk.length + ')',
+        research.peopleAlsoAsk.slice(0, 5).map(q => '❓ ' + q).join('\n')
+      );
     }
 
-    showStatus('💾 Saving to Sheet...', 'loading', 'statusAnalysis');
+    // SERP Card
+    if (research.topResults && research.topResults.length > 0) {
+      html += createCard(
+        '📈 Top SERP (' + research.topResults.length + ')',
+        research.topResults.slice(0, 3).map((r, i) => '[' + (i+1) + '] ' + r.title).join('\n')
+      );
+    }
 
-    callAppsScript('save', keyword, '', function(response) {
-      if (response.success) {
-        showStatus('✓ Saved to Google Sheet', 'success', 'statusAnalysis');
-      } else {
-        showStatus('✗ Error: ' + (response.error || 'Unknown error'), 'error', 'statusAnalysis');
-      }
-    });
+    // Pain Points Card
+    if (content.pain_points && content.pain_points.length > 0) {
+      html += createCard(
+        '⚡ Pain Points (' + content.pain_points.length + ')',
+        content.pain_points.slice(0, 5).map(p => '• ' + p).join('\n')
+      );
+    }
+
+    // Intent Card
+    html += createCard(
+      '🎯 Search Intent',
+      'Intent: ' + (content.search_intent || 'N/A') + '\n\nAngle: ' + (content.content_angle || 'N/A')
+    );
+
+    // AEO Card
+    if (content.aeo_answers && content.aeo_answers.length > 0) {
+      const aeoText = content.aeo_answers.slice(0, 2).map(a => 
+        'Q: ' + a.question + '\n\nA: ' + a.answer.substring(0, 50) + '...'
+      ).join('\n\n');
+      html += createCard('🤖 AEO Answers', aeoText);
+    }
+
+    // News Card
+    if (research.news && research.news.length > 0) {
+      html += createCard(
+        '📰 News (' + research.news.length + ')',
+        research.news.slice(0, 3).map(n => n.title).join('\n\n')
+      );
+    }
+
+    document.getElementById('searchGrid').innerHTML = html;
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('searchEmpty').style.display = 'none';
   }
 
-  // Call Apps Script via JSONP
+  // Display ideas
+  function displayIdeas(keyword) {
+    const data = allKeywordsData[keyword];
+    if (!data) return;
+
+    let ideas = data.ideas || [];
+    if (currentFilter !== "all") {
+      ideas = ideas.filter(i => i.type === currentFilter);
+    }
+
+    let html = '';
+    ideas.forEach(idea => {
+      html += `
+        <div class="idea-card">
+          <div class="idea-type">${idea.type}</div>
+          <div class="idea-title">${idea.title}</div>
+          <div class="idea-hooks">
+            <strong>Gen Z:</strong> ${idea.gen_z}<br>
+            <strong>Gen Y:</strong> ${idea.gen_y}
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById('ideasList').innerHTML = html;
+    document.getElementById('ideasResults').style.display = 'block';
+    document.getElementById('ideasEmpty').style.display = 'none';
+  }
+
+  // Filter ideas
+  function filterIdeas(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    
+    const keyword = document.getElementById('keyword').value;
+    if (allKeywordsData[keyword]) {
+      displayIdeas(keyword);
+    }
+  }
+
+  // Display dashboard
+  function displayDashboard() {
+    let html = '';
+
+    MAIN_KEYWORDS.forEach(keyword => {
+      const data = allKeywordsData[keyword];
+      html += `
+        <div class="dashboard-card">
+          <h3>${keyword}</h3>
+          <div class="dashboard-content">
+            ${data ? `
+              <div class="keyword-badge">✓ วิเคราะห์</div>
+              <p>📌 PAA: ${data.research?.peopleAlsoAsk?.length || 0}</p>
+              <p>🤖 AEO: ${data.content?.aeo_answers?.length || 0}</p>
+              <p>📈 SERP: ${data.research?.topResults?.length || 0}</p>
+              <p>💡 Ideas: ${data.ideas?.length || 0}</p>
+            ` : `
+              <div class="keyword-badge" style="background: var(--surface2); color: var(--text-dim);">⊘ ยังไม่วิเคราะห์</div>
+            `}
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById('dashboardGrid').innerHTML = html;
+    document.getElementById('dashboardResults').style.display = 'block';
+    document.getElementById('dashboardEmpty').style.display = 'none';
+  }
+
+  // Call Apps Script
   function callAppsScript(action, keyword, audience, callback) {
     const callbackName = 'callback_' + Date.now();
     
@@ -318,7 +552,7 @@
     const script = document.createElement('script');
     script.src = APPS_SCRIPT_URL + params;
     script.onerror = function() {
-      showStatus('✗ Connection failed - check Apps Script URL in code', 'error', 'statusAnalysis');
+      showStatus('✗ Connection failed', 'error', 'statusSearch');
       delete window[callbackName];
       try { document.body.removeChild(script); } catch(e) {}
       clearTimeout(timeout);
@@ -326,7 +560,7 @@
 
     const timeout = setTimeout(function() {
       if (window[callbackName]) {
-        showStatus('✗ Request timeout', 'error', 'statusAnalysis');
+        showStatus('✗ Request timeout', 'error', 'statusSearch');
         delete window[callbackName];
         try { document.body.removeChild(script); } catch(e) {}
       }
@@ -335,75 +569,64 @@
     document.body.appendChild(script);
   }
 
-  // Display results
-  function displayResults(data) {
-    const grid = document.getElementById('resultsGrid');
-    grid.innerHTML = '';
-
-    const research = data.research || {};
-    const content = data.content || {};
-
-    // PAA Card
-    if (research.peopleAlsoAsk && research.peopleAlsoAsk.length > 0) {
-      grid.innerHTML += createCard(
-        '💬 PAA Questions',
-        research.peopleAlsoAsk.slice(0, 5).map(q => '• ' + q).join('\n')
-      );
-    }
-
-    // SERP Card
-    if (research.topResults && research.topResults.length > 0) {
-      grid.innerHTML += createCard(
-        '📈 Top SERP',
-        research.topResults.slice(0, 3).map(r => '• ' + r.title).join('\n')
-      );
-    }
-
-    // Pain Points Card
-    if (content.pain_points && content.pain_points.length > 0) {
-      grid.innerHTML += createCard(
-        '⚡ Pain Points',
-        content.pain_points.slice(0, 5).map(p => '• ' + p).join('\n')
-      );
-    }
-
-    // Intent Card
-    grid.innerHTML += createCard(
-      '🎯 Search Intent',
-      'Intent: ' + (content.search_intent || 'N/A') + '\n\nAngle: ' + (content.content_angle || 'N/A')
-    );
-
-    // AEO Card
-    if (content.aeo_answers && content.aeo_answers.length > 0) {
-      const aeoText = content.aeo_answers.slice(0, 2).map(a => 
-        'Q: ' + a.question + '\n\nA: ' + a.answer.substring(0, 60) + '...'
-      ).join('\n\n');
-      grid.innerHTML += createCard('🤖 AEO Answers', aeoText);
-    }
-
-    // Ideas Card
-    if (data.ideas && data.ideas.length > 0) {
-      const ideasText = data.ideas.slice(0, 3).map(i => 
-        '• ' + i.title + ' (' + i.type + ')'
-      ).join('\n');
-      grid.innerHTML += createCard('💡 Top Ideas', ideasText);
-    }
-
-    document.getElementById('resultsSection').style.display = 'block';
-    window.scrollTo(0, document.getElementById('resultsSection').offsetTop - 100);
-  }
-
+  // Create card
   function createCard(title, content) {
     return `
       <div class="card">
         <div class="card-title">${title}</div>
-        <div class="card-content" style="white-space: pre-line;">${content}</div>
+        <div class="card-content">${content}</div>
       </div>
     `;
   }
 
+  // Save weekly
+  function saveWeekly() {
+    const keyword = document.getElementById('keyword').value;
+    if (!keyword) {
+      showStatus('⚠️ Please search keyword first', 'error', 'statusSearch');
+      return;
+    }
+
+    callAppsScript('save', keyword, '', function(response) {
+      if (response.success) {
+        showStatus('✓ Saved to Google Sheet', 'success', 'statusSearch');
+      } else {
+        showStatus('✗ Error: ' + response.error, 'error', 'statusSearch');
+      }
+    });
+  }
+
+  // Export to Excel
+  function exportWeekly() {
+    const today = new Date();
+    const rows = [
+      ['TIDLOR CONTENT RADAR - WEEKLY SUMMARY'],
+      ['Week', today.toLocaleDateString('th-TH')],
+      [],
+      ['Keyword', 'PAA', 'SERP', 'Pain Points', 'Ideas', 'Status']
+    ];
+
+    MAIN_KEYWORDS.forEach(keyword => {
+      const data = allKeywordsData[keyword];
+      rows.push([
+        keyword,
+        data?.research?.peopleAlsoAsk?.length || 0,
+        data?.research?.topResults?.length || 0,
+        data?.content?.pain_points?.length || 0,
+        data?.ideas?.length || 0,
+        data ? '✓' : '✗'
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Weekly Summary");
+    XLSX.writeFile(wb, `tidlor-weekly-${today.toISOString().split('T')[0]}.xlsx`);
+    showStatus('✓ Exported to Excel', 'success', 'statusSearch');
+  }
+
   function showStatus(msg, type, elementId) {
-    const el = document.getElementById(elementId || 'statusAnalysis');
+    const el = document.getElementById(elementId);
     el.textContent = msg;
     el.className = 'status show ' + type;
   }
